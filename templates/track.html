@@ -1,0 +1,127 @@
+{% extends "base.html" %}
+{% block title %}Track Claim — MUDIT COMPUTERS{% endblock %}
+{% block extra_styles %}
+<style>
+.hero{background:linear-gradient(135deg,#0f1e35,#1d4ed8);padding:40px 20px 70px;text-align:center}
+.hero h1{font-family:var(--fh);font-size:clamp(1.4rem,5vw,2rem);font-weight:800;color:#fff;margin-bottom:8px}
+.hero p{color:#93c5fd;font-size:.88rem}
+.track-wrap{max-width:680px;margin:-40px auto 48px;padding:0 16px}
+.search-card{background:#fff;border-radius:14px;box-shadow:0 8px 32px rgba(15,30,53,.13);padding:24px;margin-bottom:22px}
+.search-tabs{display:flex;gap:8px;margin-bottom:16px}
+.stab{flex:1;padding:9px;border-radius:8px;background:#f8fafc;border:1.5px solid var(--border);color:var(--muted);font-size:.83rem;font-weight:600;cursor:pointer;transition:all .2s;text-align:center}
+.stab.active{background:var(--brand);color:#fff;border-color:var(--brand)}
+.search-row{display:flex;gap:10px}
+.search-row .form-control{flex:1}
+.claim-card{background:#fff;border-radius:13px;box-shadow:var(--shadow);padding:18px 20px;margin-bottom:12px;border:1px solid var(--border);border-left:4px solid;transition:transform .15s}
+.claim-card:hover{transform:translateY(-2px)}
+.claim-top{display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:8px;margin-bottom:10px}
+.claim-device{font-family:var(--fh);font-size:1rem;font-weight:700}
+.claim-sub{font-size:.78rem;color:var(--muted);margin-top:2px}
+.claim-meta{display:flex;gap:14px;font-size:.8rem;color:var(--muted);flex-wrap:wrap;margin-top:8px}
+.progress-track{margin-top:12px}
+.progress-steps{display:flex;gap:3px}
+.ps{flex:1;height:5px;border-radius:3px;background:#e2e8f0}
+.ps.done{background:var(--success)}
+.ps.cur{background:var(--gold)}
+.ps-labels{display:flex;justify-content:space-between;font-size:.65rem;color:var(--muted);margin-top:4px;padding:0 1px}
+.balance-chip{background:#fef2f2;color:var(--danger);padding:3px 10px;border-radius:12px;font-size:.75rem;font-weight:700}
+.no-result{text-align:center;padding:48px 20px;background:#fff;border-radius:14px;box-shadow:var(--shadow)}
+.no-result .icon{font-size:2.5rem;margin-bottom:12px}
+.no-result h3{font-family:var(--fh);color:var(--brand);margin-bottom:6px}
+</style>
+{% endblock %}
+{% block content %}
+<div class="hero">
+  <div style="font-size:2rem;margin-bottom:10px">📍</div>
+  <h1>Track Your Service Claim</h1>
+  <p>Phone number ya Claim ID se apna device status dekhein</p>
+</div>
+<div class="track-wrap">
+  <div class="search-card">
+    <div class="search-tabs">
+      <div class="stab {% if not claim_id_q %}active{% endif %}" id="tabPhone" onclick="switchTab('phone')">📱 Phone Number</div>
+      <div class="stab {% if claim_id_q %}active{% endif %}" id="tabClaim" onclick="switchTab('claim')">🔖 Claim ID</div>
+    </div>
+    <form method="GET" action="{{ url_for('track_claim') }}" id="trackForm">
+      <div class="search-row">
+        <input class="form-control" type="tel" name="phone" id="phoneInput"
+               placeholder="9876543210" value="{{ phone }}"
+               {% if claim_id_q %}style="display:none"{% endif %}>
+        <input class="form-control" type="number" name="claim_id" id="claimInput"
+               placeholder="Claim ID enter karein" value="{{ claim_id_q }}"
+               {% if not claim_id_q %}style="display:none"{% endif %}>
+        <button type="submit" class="btn btn-primary">Search</button>
+      </div>
+    </form>
+  </div>
+
+  {% set STATUS_ORDER = ["Received","Diagnosis In Progress","Awaiting Parts","Sent to Dealer","Under Repair","Repaired","Quality Check","Ready for Pickup","Delivered"] %}
+
+  {% if phone or claim_id_q %}
+    {% if claims %}
+      <p class="text-sm text-muted" style="margin-bottom:12px">{{ claims|length }} claim(s) found</p>
+      {% for c in claims %}
+      {% set sidx = STATUS_ORDER.index(c.status) if c.status in STATUS_ORDER else 0 %}
+      <div class="claim-card" style="border-left-color:{{ status_colors.get(c.status,'#3b82f6') }}">
+        <div class="claim-top">
+          <div>
+            <div class="claim-device">{{ c.brand }} {{ c.model_name }}</div>
+            <div class="claim-sub">Claim #{{ c.id }} · {{ c.customer_name }}</div>
+          </div>
+          <div style="display:flex;flex-direction:column;align-items:flex-end;gap:5px">
+            <span class="badge" style="background:{{ status_colors.get(c.status,'#64748b') }}">{{ c.status }}</span>
+            {% if c.final_cost and c.advance_paid is not none %}
+              {% set bal = (c.final_cost or 0) - (c.advance_paid or 0) %}
+              {% if bal > 0 %}<span class="balance-chip">Balance ₹{{ '{:,.0f}'.format(bal) }}</span>{% endif %}
+            {% endif %}
+          </div>
+        </div>
+        <div class="progress-track">
+          <div class="progress-steps">
+            {% for i in range(STATUS_ORDER|length) %}
+            <div class="ps {% if i < sidx %}done{% elif i == sidx %}cur{% endif %}"></div>
+            {% endfor %}
+          </div>
+          <div class="ps-labels"><span>Received</span><span>Repair</span><span>Delivered</span></div>
+        </div>
+        <div class="claim-meta">
+          <span>📅 Received: {{ c.received_at[:10] if c.received_at else '—' }}</span>
+          <span>🔄 Updated: {{ c.updated_at[:10] if c.updated_at else '—' }}</span>
+          {% if c.estimated_cost %}<span>💰 Estimate: ₹{{ '{:,.0f}'.format(c.estimated_cost) }}</span>{% endif %}
+        </div>
+        <div style="margin-top:12px">
+          <a href="{{ url_for('track_timeline', claim_id=c.id) }}" class="btn btn-secondary btn-xs">📋 Full Timeline</a>
+          {% if c.status == 'Delivered' %}
+          <a href="{{ url_for('feedback', claim_id=c.id) }}" class="btn btn-primary btn-xs" style="margin-left:6px">⭐ Feedback Dein</a>
+          {% endif %}
+        </div>
+      </div>
+      {% endfor %}
+    {% else %}
+      <div class="no-result">
+        <div class="icon">🔍</div>
+        <h3>Koi claim nahi mila</h3>
+        <p class="text-muted" style="font-size:.88rem">
+          {% if phone %}Phone {{ phone }} se koi record nahi.{% endif %}
+          {% if claim_id_q %}Claim #{{ claim_id_q }} nahi mila.{% endif %}
+        </p>
+        <br>
+        <a href="{{ url_for('submit_claim') }}" class="btn btn-primary btn-sm">+ New Claim</a>
+      </div>
+    {% endif %}
+  {% endif %}
+</div>
+{% endblock %}
+{% block scripts %}
+<script>
+function switchTab(tab) {
+  const isPhone = tab === 'phone';
+  document.getElementById('phoneInput').style.display = isPhone ? '' : 'none';
+  document.getElementById('claimInput').style.display = isPhone ? 'none' : '';
+  document.getElementById('tabPhone').classList.toggle('active', isPhone);
+  document.getElementById('tabClaim').classList.toggle('active', !isPhone);
+  if (isPhone) { document.getElementById('claimInput').value = ''; }
+  else { document.getElementById('phoneInput').value = ''; }
+}
+</script>
+{% endblock %}

@@ -1,0 +1,8 @@
+flask>=3.0.0
+werkzeug>=3.0.0
+apscheduler>=3.10.0
+pywhatkit>=5.4
+qrcode[pil]>=7.4
+Pillow>=10.0.0
+firebase-admin>=6.0.0
+gunicorn>=22.0.0

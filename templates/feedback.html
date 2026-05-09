@@ -1,0 +1,54 @@
+{% extends "base.html" %}
+{% block title %}Feedback — MUDIT COMPUTERS{% endblock %}
+{% block extra_styles %}
+<style>
+.fb-page{min-height:calc(100vh - 56px);display:flex;align-items:center;justify-content:center;padding:24px 16px}
+.fb-card{background:#fff;border-radius:20px;box-shadow:var(--shadow-lg);padding:40px 34px;max-width:460px;width:100%;text-align:center}
+.fb-card h1{font-family:var(--fh);font-size:1.5rem;font-weight:800;color:var(--brand);margin-bottom:6px}
+.fb-card .sub{color:var(--muted);font-size:.88rem;margin-bottom:28px}
+.star-row{display:flex;gap:10px;justify-content:center;margin-bottom:24px}
+.star-btn{font-size:2.2rem;cursor:pointer;opacity:.3;transition:all .15s;background:none;border:none;line-height:1}
+.star-btn.active,.star-btn:hover{opacity:1;transform:scale(1.15)}
+.device-info{background:#f8fafc;border-radius:10px;padding:14px;margin-bottom:22px;font-size:.85rem;color:var(--text);text-align:left}
+</style>
+{% endblock %}
+{% block content %}
+<div class="fb-page">
+  <div class="fb-card">
+    <div style="font-size:2.5rem;margin-bottom:14px">🙏</div>
+    <h1>Feedback Dein</h1>
+    <p class="sub">Aapka experience kaisa raha? Hamare liye bahut important hai.</p>
+    <div class="device-info">
+      <strong>{{ claim.brand }} {{ claim.model_name }}</strong> — Claim #{{ claim.id }}<br>
+      Customer: {{ claim.customer_name }}
+    </div>
+    <form method="POST" action="{{ url_for('feedback', claim_id=claim.id) }}">
+      <div class="star-row" id="starRow">
+        {% for i in range(1,6) %}
+        <button type="button" class="star-btn" data-val="{{ i }}" onclick="setRating({{ i }})">⭐</button>
+        {% endfor %}
+      </div>
+      <input type="hidden" name="rating" id="ratingInput" value="5">
+      <div class="form-group" style="text-align:left">
+        <label>Koi comment? (Optional)</label>
+        <textarea class="form-control" name="comment" rows="3"
+                  placeholder="Service kaisi lagi? Koi suggestion?"></textarea>
+      </div>
+      <button type="submit" class="btn btn-primary" style="width:100%;justify-content:center;padding:12px">⭐ Feedback Submit Karein</button>
+    </form>
+  </div>
+</div>
+{% endblock %}
+{% block scripts %}
+<script>
+let rating = 5;
+function setRating(val) {
+  rating = val;
+  document.getElementById('ratingInput').value = val;
+  document.querySelectorAll('.star-btn').forEach((b,i) => {
+    b.classList.toggle('active', i < val);
+  });
+}
+setRating(5);
+</script>
+{% endblock %}

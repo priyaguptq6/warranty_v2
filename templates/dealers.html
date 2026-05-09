@@ -1,0 +1,81 @@
+{% extends "base.html" %}
+{% block title %}Dealers — MUDIT COMPUTERS{% endblock %}
+{% block extra_styles %}
+<style>
+.page-wrap{max-width:1100px;margin:0 auto;padding:24px 20px 48px}
+.page-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:24px;flex-wrap:wrap;gap:12px}
+.page-header h1{font-family:var(--fh);font-size:1.5rem;font-weight:800;color:var(--brand)}
+.dealer-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:16px;margin-bottom:24px}
+.dealer-card{
+  background:#fff;border-radius:14px;border:1px solid var(--border);
+  box-shadow:var(--shadow);padding:20px;
+  transition:transform .15s,box-shadow .15s;
+  text-decoration:none!important;display:block;color:var(--text)
+}
+.dealer-card:hover{transform:translateY(-3px);box-shadow:var(--shadow-lg);text-decoration:none}
+.dealer-card-top{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:12px}
+.dealer-name{font-family:var(--fh);font-size:1.05rem;font-weight:700;color:var(--brand);margin-bottom:3px}
+.dealer-spec{font-size:.78rem;color:var(--muted);font-weight:500}
+.active-dot{width:9px;height:9px;border-radius:50%;background:var(--success);flex-shrink:0;margin-top:5px}
+.inactive-dot{width:9px;height:9px;border-radius:50%;background:#d1d5db;flex-shrink:0;margin-top:5px}
+.dealer-info{font-size:.82rem;color:var(--muted);line-height:1.7}
+.dealer-info span{display:flex;align-items:center;gap:5px}
+.dealer-stats{display:flex;gap:12px;margin-top:14px;padding-top:14px;border-top:1px solid var(--border)}
+.dstat{text-align:center;flex:1}
+.dstat .val{font-family:var(--fh);font-size:1.2rem;font-weight:800;color:var(--brand)}
+.dstat .lbl{font-size:.7rem;color:var(--muted);text-transform:uppercase;letter-spacing:.5px}
+
+.empty-state{text-align:center;padding:60px 20px;background:#fff;border-radius:14px;border:1px solid var(--border)}
+.empty-state .icon{font-size:3rem;margin-bottom:14px}
+.empty-state h3{font-family:var(--fh);color:var(--brand);margin-bottom:6px}
+.empty-state p{color:var(--muted);font-size:.9rem;margin-bottom:18px}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="page-wrap">
+  <div class="page-header">
+    <div>
+      <h1>🏪 Dealer Management</h1>
+      <p class="text-muted text-sm">Service centers aur repair dealers ka record</p>
+    </div>
+    <a href="{{ url_for('add_dealer') }}" class="btn btn-primary">+ Naya Dealer Add Karein</a>
+  </div>
+
+  {% if dealers %}
+  <div class="dealer-grid">
+    {% for d in dealers %}
+    <a href="{{ url_for('dealer_detail', dealer_id=d.id) }}" class="dealer-card">
+      <div class="dealer-card-top">
+        <div>
+          <div class="dealer-name">{{ d.name }}</div>
+          <div class="dealer-spec">{{ d.specialization or 'General Repairs' }}</div>
+        </div>
+        <div class="{{ 'active-dot' if d.is_active else 'inactive-dot' }}"
+             title="{{ 'Active' if d.is_active else 'Inactive' }}"></div>
+      </div>
+      <div class="dealer-info">
+        <span>📞 {{ d.phone }}</span>
+        <span>📍 {{ d.address[:45] }}{% if d.address|length > 45 %}...{% endif %}</span>
+        {% if d.city %}<span>🏙️ {{ d.city }}</span>{% endif %}
+        {% if d.contact_person %}<span>👤 {{ d.contact_person }}</span>{% endif %}
+      </div>
+      <div class="dealer-stats">
+        <div class="dstat">
+          <div class="val">{{ d.total_assignments }}</div>
+          <div class="lbl">Total Items</div>
+        </div>
+      </div>
+    </a>
+    {% endfor %}
+  </div>
+  {% else %}
+  <div class="empty-state">
+    <div class="icon">🏪</div>
+    <h3>Koi dealer nahi mila</h3>
+    <p>Pehle dealer add karein taaki items unhe assign kar sakein.</p>
+    <a href="{{ url_for('add_dealer') }}" class="btn btn-primary">+ Pehla Dealer Add Karein</a>
+  </div>
+  {% endif %}
+</div>
+{% endblock %}

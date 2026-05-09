@@ -1,0 +1,576 @@
+{% extends "base.html" %}
+{% block title %}Claim #{{ claim.id }} — Admin{% endblock %}
+{% block extra_styles %}
+<style>
+.detail-wrap{max-width:1240px;margin:0 auto;padding:20px 16px 48px}
+.back-link{display:inline-flex;align-items:center;gap:6px;color:var(--muted);font-size:.83rem;font-weight:600;margin-bottom:18px;text-decoration:none;transition:color .2s}
+.back-link:hover{color:var(--blue);text-decoration:none}
+.detail-grid{display:grid;grid-template-columns:1fr 340px;gap:18px}
+@media(max-width:960px){.detail-grid{grid-template-columns:1fr}}
+
+/* Claim hero */
+.claim-hero{background:linear-gradient(135deg,#0f1e35,#1d4ed8);border-radius:14px;padding:22px;margin-bottom:18px;color:#fff;display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:12px}
+.claim-hero-device{font-family:var(--fh);font-size:1.3rem;font-weight:800}
+.claim-hero-sub{font-size:.82rem;color:#93c5fd;margin-top:4px}
+.claim-hero-badge{padding:7px 16px;border-radius:20px;font-size:.8rem;font-weight:700;color:#fff}
+
+/* Info grid */
+.info-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px 18px}
+.info-item .lbl{font-size:.7rem;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:var(--muted);margin-bottom:2px}
+.info-item .val{font-size:.9rem;font-weight:600;color:var(--text)}
+.warranty-ok{color:var(--success)!important}
+.warranty-no{color:var(--danger)!important}
+
+/* Photos grid */
+.photos-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(130px,1fr));gap:10px;margin-top:12px}
+.photo-item{border-radius:10px;overflow:hidden;border:1px solid var(--border);position:relative;aspect-ratio:4/3;background:#f8fafc}
+.photo-item img{width:100%;height:100%;object-fit:cover;cursor:pointer;transition:transform .2s}
+.photo-item img:hover{transform:scale(1.03)}
+.photo-badge{position:absolute;top:5px;left:5px;background:rgba(0,0,0,.65);color:#fff;font-size:.65rem;font-weight:700;padding:2px 7px;border-radius:10px}
+.photo-upload-btn{border-radius:10px;border:2px dashed var(--border);aspect-ratio:4/3;display:flex;flex-direction:column;align-items:center;justify-content:center;cursor:pointer;transition:all .2s;background:#f8fafc;font-size:.78rem;color:var(--muted);gap:4px}
+.photo-upload-btn:hover{border-color:var(--blue);background:#eff6ff;color:var(--blue)}
+
+/* Timeline */
+.timeline{padding:4px 0}
+.tl-item{display:flex;gap:12px;padding-bottom:18px;position:relative}
+.tl-item:not(:last-child)::before{content:'';position:absolute;left:13px;top:28px;width:2px;bottom:0;background:var(--border)}
+.tl-dot{width:28px;height:28px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:.75rem;color:#fff;flex-shrink:0;position:relative;z-index:1}
+.tl-body{flex:1;padding-top:3px}
+.tl-title{font-weight:700;font-size:.85rem}
+.tl-meta{font-size:.75rem;color:var(--muted);margin-top:1px}
+.tl-note{font-size:.78rem;color:var(--muted);margin-top:5px;background:#f8fafc;padding:6px 10px;border-radius:6px;border-left:3px solid var(--border)}
+
+/* Side panel */
+.side-panel{display:flex;flex-direction:column;gap:14px}
+.update-card{background:var(--brand);border-radius:14px;overflow:hidden}
+.update-card-header{padding:16px 18px;border-bottom:1px solid rgba(255,255,255,.1)}
+.update-card-header h3{font-family:var(--fh);font-size:.95rem;font-weight:700;color:#fff}
+.update-card-header p{color:#93c5fd;font-size:.75rem;margin-top:2px}
+.update-card-body{padding:16px 18px}
+.update-card label{color:#cbd5e1;font-size:.75rem;font-weight:600;text-transform:uppercase;letter-spacing:.4px}
+.update-card .form-control{background:rgba(255,255,255,.08);border-color:rgba(255,255,255,.15);color:#fff}
+.update-card .form-control:focus{border-color:#60a5fa;background:rgba(255,255,255,.12)}
+.update-card .form-control option{color:var(--text);background:#fff}
+.update-card textarea::placeholder,.update-card input::placeholder{color:rgba(255,255,255,.3)}
+.notif-note{background:rgba(16,185,129,.15);border:1px solid rgba(16,185,129,.3);border-radius:8px;padding:9px 12px;font-size:.75rem;color:#6ee7b7;margin-top:12px;display:flex;gap:7px;align-items:flex-start;line-height:1.5}
+
+/* Payments */
+.payment-row{display:flex;justify-content:space-between;align-items:center;padding:9px 0;border-bottom:1px solid var(--border);font-size:.85rem}
+.payment-row:last-child{border-bottom:none}
+.payment-amount{font-weight:700;color:var(--success)}
+.balance-due{background:#fef2f2;border:1px solid #fecaca;border-radius:8px;padding:12px;margin-top:10px;text-align:center}
+.balance-due .amt{font-family:var(--fh);font-size:1.3rem;font-weight:800;color:var(--danger)}
+
+/* Dealer card */
+.dealer-assigned{background:#eff6ff;border:1px solid #bfdbfe;border-radius:10px;padding:14px;font-size:.85rem}
+.dealer-assigned h4{font-family:var(--fh);font-size:.9rem;font-weight:700;color:var(--blue);margin-bottom:8px}
+
+/* Lightbox */
+.lightbox{display:none;position:fixed;inset:0;background:rgba(0,0,0,.9);z-index:1000;align-items:center;justify-content:center}
+.lightbox.open{display:flex}
+.lightbox img{max-width:90vw;max-height:90vh;object-fit:contain;border-radius:8px}
+.lightbox-close{position:absolute;top:20px;right:24px;color:#fff;font-size:2rem;cursor:pointer;background:rgba(0,0,0,.5);width:40px;height:40px;border-radius:50%;display:flex;align-items:center;justify-content:center;line-height:1}
+
+/* AI suggest */
+.ai-suggest-box{background:#f0f7ff;border:1px solid #bfdbfe;border-radius:8px;padding:10px 12px;margin-top:8px;font-size:.82rem;color:#1e40af;display:none}
+.ai-suggest-box.show{display:block}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="detail-wrap">
+  <a href="{{ url_for('admin_dashboard') }}" class="back-link">← Dashboard</a>
+
+  <!-- Claim Hero -->
+  <div class="claim-hero">
+    <div>
+      <div class="claim-hero-device">{{ claim.brand }} {{ claim.model_name }}</div>
+      <div class="claim-hero-sub">
+        Claim #{{ claim.id }} &nbsp;·&nbsp; {{ claim.customer_name }} &nbsp;·&nbsp;
+        S/N: <span class="mono">{{ claim.serial_number }}</span>
+      </div>
+    </div>
+    <span class="claim-hero-badge" style="background:{{ status_colors.get(claim.status,'#64748b') }}">
+      {{ claim.status }}
+    </span>
+  </div>
+
+  <div class="detail-grid">
+    <!-- LEFT -->
+    <div>
+
+      <!-- Customer & Device Info -->
+      <div class="card mb-16">
+        <div class="card-header">👤 Customer &amp; Device Details</div>
+        <div class="card-body">
+          <div class="info-grid">
+            <div class="info-item"><div class="lbl">Customer</div><div class="val">{{ claim.customer_name }}</div></div>
+            <div class="info-item"><div class="lbl">Phone</div><div class="val">{{ claim.phone }}</div></div>
+            <div class="info-item"><div class="lbl">Email</div><div class="val">{{ claim.email or '—' }}</div></div>
+            <div class="info-item"><div class="lbl">Address</div><div class="val">{{ claim.address or '—' }}</div></div>
+            <div class="info-item">
+              <div class="lbl">Warranty Status</div>
+              <div class="val {% if claim.warranty_status=='Under Warranty' %}warranty-ok{% elif claim.warranty_status=='Out of Warranty' %}warranty-no{% endif %}">
+                {{ claim.warranty_status }}
+              </div>
+            </div>
+            <div class="info-item"><div class="lbl">Warranty Expiry</div><div class="val">{{ claim.warranty_expiry or '—' }}</div></div>
+            <div class="info-item"><div class="lbl">Received</div><div class="val text-sm">{{ claim.received_at[:16] if claim.received_at else '—' }}</div></div>
+            <div class="info-item"><div class="lbl">Last Updated</div><div class="val text-sm">{{ claim.updated_at[:16] if claim.updated_at else '—' }}</div></div>
+            <div class="info-item"><div class="lbl">Technician</div><div class="val">{{ claim.technician_name or 'Unassigned' }}</div></div>
+          </div>
+
+          <hr class="divider">
+          <div class="info-item mb-16">
+            <div class="lbl">Issue Description</div>
+            <div style="background:#fffbeb;border:1px solid #fcd34d;border-radius:8px;padding:12px 14px;margin-top:6px;font-size:.9rem;line-height:1.6">
+              {{ claim.issue_desc }}
+            </div>
+          </div>
+          {% if claim.accessories %}
+          <div class="info-item">
+            <div class="lbl">Accessories</div>
+            <div class="val">{{ claim.accessories }}</div>
+          </div>
+          {% endif %}
+          {% if claim.technician_note %}
+          <div class="info-item mt-12">
+            <div class="lbl">Technician Note</div>
+            <div style="background:#f0fdf4;border:1px solid #86efac;border-radius:8px;padding:12px 14px;margin-top:6px;font-size:.88rem">
+              {{ claim.technician_note }}
+            </div>
+          </div>
+          {% endif %}
+
+          {% if ai_enabled %}
+          <div style="margin-top:14px">
+            <button type="button" class="btn btn-secondary btn-sm" onclick="aiSuggest()">
+              🤖 AI Diagnosis Suggest Karein
+            </button>
+            <div class="ai-suggest-box" id="aiSuggestBox">
+              <div id="aiSuggestText">Loading...</div>
+            </div>
+          </div>
+          {% endif %}
+        </div>
+      </div>
+
+      <!-- Photos Section -->
+      <div class="card mb-16">
+        <div class="card-header">📸 Device Photos</div>
+        <div class="card-body">
+          <div class="photos-grid" id="photosGrid">
+            {% for img in images %}
+            <div class="photo-item">
+              <img src="/static/{{ img.filename }}" alt="{{ img.image_type }}"
+                   onclick="openLightbox(this.src)">
+              <div class="photo-badge">{{ img.image_type }}</div>
+            </div>
+            {% endfor %}
+          </div>
+
+          <!-- Upload intake photo -->
+          <form method="POST" action="{{ url_for('upload_image', claim_id=claim.id) }}"
+                enctype="multipart/form-data" class="mt-12" id="imgUploadForm">
+            <div class="row-2">
+              <div class="form-group">
+                <label>Image Type</label>
+                <select class="form-control" name="image_type">
+                  <option value="intake">Intake (Receiving)</option>
+                  <option value="damage">Damage Photo</option>
+                  <option value="repair">During Repair</option>
+                  <option value="delivery">Delivery Proof</option>
+                  <option value="other">Other</option>
+                </select>
+              </div>
+              <div class="form-group">
+                <label>Notes</label>
+                <input class="form-control" name="notes" placeholder="Optional notes">
+              </div>
+            </div>
+            <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap">
+              <input type="file" name="image_file" id="imgFileInput" accept="image/*"
+                     style="display:none" onchange="previewUpload(this)">
+              <button type="button" class="btn btn-secondary btn-sm"
+                      onclick="document.getElementById('imgFileInput').click()">
+                📁 File Choose Karein
+              </button>
+              <span id="selectedFileName" class="text-sm text-muted">Koi file nahi chuna</span>
+              <button type="submit" class="btn btn-primary btn-sm">⬆️ Upload</button>
+            </div>
+          </form>
+        </div>
+      </div>
+
+      <!-- Dealer Assignment -->
+      <div class="card mb-16">
+        <div class="card-header">🏪 Dealer Assignment</div>
+        <div class="card-body">
+          {% if dealer %}
+          <div class="dealer-assigned mb-16">
+            <h4>🏪 {{ dealer.dealer_name }}</h4>
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;font-size:.83rem;color:var(--text)">
+              <div>📞 {{ dealer.dealer_phone }}</div>
+              <div>📅 Sent: {{ dealer.sent_date }}</div>
+              <div>📍 {{ dealer.dealer_address }}{% if dealer.dealer_city %}, {{ dealer.dealer_city }}{% endif %}</div>
+              <div>⏰ Expected: {{ dealer.expected_return or '—' }}</div>
+              {% if dealer.dealer_job_no %}<div>🔖 Job#: <strong>{{ dealer.dealer_job_no }}</strong></div>{% endif %}
+              {% if dealer.repair_type %}<div>🔧 Type: {{ dealer.repair_type }}</div>{% endif %}
+              {% if dealer.dealer_cost %}<div>💰 Dealer Cost: ₹{{ '{:,.0f}'.format(dealer.dealer_cost) }}</div>{% endif %}
+            </div>
+            <div style="margin-top:10px">
+              <span style="background:{{ '#fef3c7' if dealer.status=='Pending' else ('#d1fae5' if dealer.status=='Returned' else '#ede9fe') }};
+                           color:{{ '#92400e' if dealer.status=='Pending' else ('#065f46' if dealer.status=='Returned' else '#5b21b6') }};
+                           padding:3px 10px;border-radius:12px;font-size:.75rem;font-weight:700">
+                {{ dealer.status }}
+              </span>
+            </div>
+          </div>
+          {% if dealer.status != 'Returned' %}
+          <form method="POST" action="{{ url_for('dealer_return', claim_id=claim.id) }}"
+                style="background:#f8fafc;border-radius:10px;padding:14px;border:1px solid var(--border)">
+            <p class="fw-700 text-sm mb-16">📦 Item Wapas Aaya (Return Mark Karein)</p>
+            <div class="row-3">
+              <div class="form-group">
+                <label>Return Date</label>
+                <input class="form-control" type="date" name="actual_return"
+                       value="{{ today }}">
+              </div>
+              <div class="form-group">
+                <label>Return Status</label>
+                <select class="form-control" name="return_status">
+                  <option>Returned</option>
+                  <option>Cancelled</option>
+                </select>
+              </div>
+              <div class="form-group">
+                <label>Dealer Cost (₹)</label>
+                <input class="form-control" type="number" name="dealer_cost"
+                       placeholder="0" step="50">
+              </div>
+            </div>
+            <div class="form-group">
+              <label>Notes</label>
+              <input class="form-control" name="notes" placeholder="Koi bhi notes...">
+            </div>
+            <button type="submit" class="btn btn-success btn-sm">✅ Return Confirm Karein</button>
+          </form>
+          {% endif %}
+          {% else %}
+          {% if dealers %}
+          <form method="POST" action="{{ url_for('assign_dealer', claim_id=claim.id) }}">
+            <div class="row-2">
+              <div class="form-group">
+                <label>Dealer Select Karein <span class="req">*</span></label>
+                <select class="form-control" name="dealer_id" required>
+                  <option value="">— Dealer —</option>
+                  {% for d in dealers %}
+                  <option value="{{ d.id }}">{{ d.name }}{% if d.city %} ({{ d.city }}){% endif %}</option>
+                  {% endfor %}
+                </select>
+              </div>
+              <div class="form-group">
+                <label>Sent Date</label>
+                <input class="form-control" type="date" name="sent_date" value="{{ today }}">
+              </div>
+            </div>
+            <div class="row-2">
+              <div class="form-group">
+                <label>Expected Return</label>
+                <input class="form-control" type="date" name="expected_return">
+              </div>
+              <div class="form-group">
+                <label>Dealer Job Number</label>
+                <input class="form-control" name="dealer_job_no" placeholder="Dealer ka reference no.">
+              </div>
+            </div>
+            <div class="row-2">
+              <div class="form-group">
+                <label>Repair Type</label>
+                <select class="form-control" name="repair_type">
+                  <option value="warranty">Warranty</option>
+                  <option value="chargeable">Chargeable</option>
+                  <option value="doa">DOA</option>
+                  <option value="goodwill">Goodwill</option>
+                </select>
+              </div>
+              <div class="form-group">
+                <label>Estimated Dealer Cost (₹)</label>
+                <input class="form-control" type="number" name="dealer_cost" placeholder="0" step="50">
+              </div>
+            </div>
+            <div class="form-group">
+              <label>Items Sent (description)</label>
+              <input class="form-control" name="items_sent"
+                     placeholder="e.g. Laptop without charger, bag included">
+            </div>
+            <div class="form-group">
+              <label>Notes</label>
+              <textarea class="form-control" name="notes" rows="2"
+                        placeholder="Koi important notes..."></textarea>
+            </div>
+            <button type="submit" class="btn btn-primary btn-sm">📦 Dealer Ko Assign Karein</button>
+          </form>
+          {% else %}
+          <p class="text-muted text-sm">
+            Pehle <a href="{{ url_for('add_dealer') }}">dealer add karein</a>, phir assign karein.
+          </p>
+          {% endif %}
+          {% endif %}
+        </div>
+      </div>
+
+      <!-- Payments -->
+      <div class="card mb-16">
+        <div class="card-header">💰 Payments
+          <span style="margin-left:auto;font-family:var(--fb);font-size:.85rem;font-weight:400;color:var(--muted)">
+            Est: {% if claim.estimated_cost %}₹{{ '{:,.0f}'.format(claim.estimated_cost) }}{% else %}—{% endif %} &nbsp;|&nbsp;
+            Final: {% if claim.final_cost %}₹{{ '{:,.0f}'.format(claim.final_cost) }}{% else %}—{% endif %}
+          </span>
+        </div>
+        <div class="card-body">
+          {% for p in payments %}
+          <div class="payment-row">
+            <div>
+              <div class="fw-600">{{ p.payment_type.title() }} — {{ p.payment_mode }}</div>
+              <div class="text-xs text-muted">{{ p.paid_at[:16] if p.paid_at else '' }}
+                {% if p.reference_no %}&nbsp;·&nbsp; Ref: {{ p.reference_no }}{% endif %}
+              </div>
+            </div>
+            <div class="payment-amount">₹{{ '{:,.0f}'.format(p.amount) }}</div>
+          </div>
+          {% else %}
+          <p class="text-sm text-muted" style="margin-bottom:12px">Koi payment record nahi hai.</p>
+          {% endfor %}
+
+          {% if claim.final_cost and claim.advance_paid is not none %}
+          {% set balance = (claim.final_cost or 0) - (claim.advance_paid or 0) %}
+          {% if balance > 0 %}
+          <div class="balance-due">
+            <div class="text-xs text-muted" style="margin-bottom:4px">Balance Due</div>
+            <div class="amt">₹{{ '{:,.0f}'.format(balance) }}</div>
+          </div>
+          {% endif %}
+          {% endif %}
+
+          <hr class="divider">
+          <p class="fw-700 text-sm mb-16">+ Payment Add Karein</p>
+          <form method="POST" action="{{ url_for('add_payment', claim_id=claim.id) }}">
+            <div class="row-3">
+              <div class="form-group">
+                <label>Amount (₹) <span class="req">*</span></label>
+                <input class="form-control" type="number" name="amount" placeholder="500" step="50" required>
+              </div>
+              <div class="form-group">
+                <label>Mode</label>
+                <select class="form-control" name="payment_mode">
+                  {% for m in payment_modes %}<option>{{ m }}</option>{% endfor %}
+                </select>
+              </div>
+              <div class="form-group">
+                <label>Type</label>
+                <select class="form-control" name="payment_type">
+                  <option value="advance">Advance</option>
+                  <option value="final">Final</option>
+                  <option value="partial">Partial</option>
+                  <option value="refund">Refund</option>
+                </select>
+              </div>
+            </div>
+            <div class="row-2">
+              <div class="form-group">
+                <label>Reference / UPI ID</label>
+                <input class="form-control" name="reference_no" placeholder="Optional">
+              </div>
+              <div class="form-group" style="align-self:flex-end">
+                <button type="submit" class="btn btn-success btn-sm" style="width:100%">
+                  💰 Payment Add
+                </button>
+              </div>
+            </div>
+          </form>
+        </div>
+      </div>
+
+      <!-- Status History Timeline -->
+      <div class="card">
+        <div class="card-header">🕐 Status History</div>
+        <div class="card-body">
+          <div class="timeline">
+            {% for h in history %}
+            <div class="tl-item">
+              <div class="tl-dot" style="background:{{ status_colors.get(h.new_status,'#3b82f6') }}">↪</div>
+              <div class="tl-body">
+                <div class="tl-title">
+                  {{ h.new_status }}
+                  {% if h.old_status %}
+                  <span class="text-xs text-muted">(was: {{ h.old_status }})</span>
+                  {% endif %}
+                </div>
+                <div class="tl-meta">{{ h.changed_at[:16] if h.changed_at else '' }} · {{ h.changed_by }}</div>
+                {% if h.note %}<div class="tl-note">📝 {{ h.note }}</div>{% endif %}
+              </div>
+            </div>
+            {% endfor %}
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- RIGHT SIDE PANEL -->
+    <div class="side-panel">
+
+      <!-- Update Status Card -->
+      <div class="update-card">
+        <div class="update-card-header">
+          <h3>⚡ Status Update</h3>
+          <p>Update karo → customer ko notify ho jayega</p>
+        </div>
+        <div class="update-card-body">
+          <div style="margin-bottom:14px">
+            <span style="background:{{ status_colors.get(claim.status,'#64748b') }};color:#fff;padding:4px 12px;border-radius:20px;font-size:.75rem;font-weight:700">
+              Current: {{ claim.status }}
+            </span>
+          </div>
+          <form method="POST" action="{{ url_for('admin_update_status', claim_id=claim.id) }}" id="updateForm">
+            <div class="form-group">
+              <label>New Status</label>
+              <select class="form-control" name="status" required>
+                {% for st in all_statuses %}
+                <option value="{{ st }}" {% if st==claim.status %}selected{% endif %}>{{ st }}</option>
+                {% endfor %}
+              </select>
+            </div>
+            <div class="form-group">
+              <label>Assign Technician</label>
+              <select class="form-control" name="technician_id">
+                <option value="">— Select —</option>
+                {% for t in technicians %}
+                <option value="{{ t.id }}" {% if claim.technician_id and t.id == claim.technician_id %}selected{% endif %}>{{ t.name }}</option>
+                {% endfor %}
+              </select>
+            </div>
+            <div class="form-group">
+              <label>Technician Note</label>
+              <textarea class="form-control" name="technician_note" rows="3"
+                        placeholder="Diagnosis result, parts replaced...">{{ claim.technician_note or '' }}</textarea>
+            </div>
+            <div class="form-group">
+              <label>Final Cost (₹)</label>
+              <input class="form-control" type="number" name="final_cost"
+                     placeholder="1500" min="0" step="50"
+                     value="{{ claim.final_cost|int if claim.final_cost else '' }}">
+            </div>
+            <button type="submit" class="btn btn-primary" style="width:100%;justify-content:center;padding:12px" id="updateBtn">
+              🚀 Update &amp; Notify
+            </button>
+            <div class="notif-note">
+              📱 {{ claim.customer_name }} ko WhatsApp + Email notification jayega automatically.
+            </div>
+          </form>
+        </div>
+      </div>
+
+      <!-- Customer Feedback -->
+      {% if claim.feedback_rating %}
+      <div class="card">
+        <div class="card-header">⭐ Customer Feedback</div>
+        <div class="card-body">
+          <div style="font-size:1.4rem;margin-bottom:4px">
+            {% for i in range(claim.feedback_rating) %}⭐{% endfor %}
+            {% for i in range(5 - claim.feedback_rating) %}☆{% endfor %}
+          </div>
+          <div class="text-sm" style="color:var(--text)">{{ claim.feedback_comment or 'No comment.' }}</div>
+        </div>
+      </div>
+      {% endif %}
+
+      <!-- Delivery Photo Upload -->
+      <div class="card">
+        <div class="card-header">📸 Delivery Proof</div>
+        <div class="card-body">
+          <p class="text-sm text-muted mb-16">Device deliver karte waqt customer ke saath photo upload karein.</p>
+          <form method="POST" action="{{ url_for('upload_delivery_photo', claim_id=claim.id) }}"
+                enctype="multipart/form-data">
+            <div class="form-group">
+              <input type="file" name="delivery_photo" accept="image/*" class="form-control">
+            </div>
+            <button type="submit" class="btn btn-success btn-sm" style="width:100%;justify-content:center">
+              📤 Upload Delivery Photo
+            </button>
+          </form>
+          {% for img in images if img.image_type == 'delivery' %}
+          <div style="margin-top:10px">
+            <img src="/static/{{ img.filename }}" style="width:100%;border-radius:8px;cursor:pointer"
+                 onclick="openLightbox(this.src)">
+          </div>
+          {% endfor %}
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<!-- Lightbox -->
+<div class="lightbox" id="lightbox" onclick="closeLightbox()">
+  <div class="lightbox-close" onclick="closeLightbox()">✕</div>
+  <img id="lightboxImg" src="" alt="Photo">
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+const TODAY = "{{ today }}";
+
+// Populate today date in empty date fields
+document.querySelectorAll('input[type=date]').forEach(el => {
+  if (!el.value) el.value = TODAY;
+});
+
+document.getElementById('updateForm')?.addEventListener('submit', function() {
+  const btn = document.getElementById('updateBtn');
+  btn.disabled = true; btn.textContent = '⏳ Updating...';
+});
+
+function previewUpload(input) {
+  const name = input.files[0]?.name || 'Koi file nahi chuna';
+  document.getElementById('selectedFileName').textContent = name;
+}
+
+function openLightbox(src) {
+  document.getElementById('lightboxImg').src = src;
+  document.getElementById('lightbox').classList.add('open');
+}
+function closeLightbox() {
+  document.getElementById('lightbox').classList.remove('open');
+}
+document.addEventListener('keydown', e => { if(e.key==='Escape') closeLightbox(); });
+
+{% if ai_enabled %}
+function aiSuggest() {
+  const box = document.getElementById('aiSuggestBox');
+  const txt = document.getElementById('aiSuggestText');
+  box.classList.add('show');
+  txt.textContent = '🤖 AI soch raha hai...';
+
+  fetch('/api/ai/suggest-diagnosis', {
+    method: 'POST',
+    headers: {'Content-Type':'application/json'},
+    body: JSON.stringify({
+      issue: "{{ claim.issue_desc | replace('"','') | replace('\n',' ') }}",
+      brand: "{{ claim.brand }}",
+      model: "{{ claim.model_name }}"
+    })
+  })
+  .then(r => r.json())
+  .then(d => {
+    txt.innerHTML = d.success
+      ? '<strong>AI Suggestion:</strong><br>' + d.suggestion.replace(/\n/g,'<br>')
+      : '⚠️ ' + (d.error || 'AI response nahi mila');
+  })
+  .catch(() => { txt.textContent = '⚠️ AI server unavailable'; });
+}
+{% endif %}
+</script>
+{% endblock %}

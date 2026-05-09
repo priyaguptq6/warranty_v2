@@ -1,0 +1,46 @@
+{% extends "base.html" %}
+{% block title %}Request Submitted — MUDIT COMPUTERS{% endblock %}
+{% block extra_styles %}
+<style>
+.ok-page{min-height:calc(100vh - 56px);display:flex;align-items:center;justify-content:center;padding:24px 16px}
+.ok-card{background:#fff;border-radius:20px;box-shadow:0 8px 40px rgba(15,30,53,.14);padding:44px 34px;max-width:480px;width:100%;text-align:center}
+.ok-icon{width:80px;height:80px;background:linear-gradient(135deg,#10b981,#059669);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:2rem;margin:0 auto 22px;box-shadow:0 8px 24px rgba(16,185,129,.3);animation:pop .5s cubic-bezier(.175,.885,.32,1.275) forwards}
+@keyframes pop{from{transform:scale(0);opacity:0}to{transform:scale(1);opacity:1}}
+.ok-card h1{font-family:var(--fh);font-size:1.6rem;font-weight:800;color:var(--brand);margin-bottom:6px}
+.ok-card .sub{color:var(--muted);font-size:.9rem;margin-bottom:24px}
+.details-box{background:#f8fafc;border-radius:12px;padding:18px;text-align:left;margin-bottom:22px;border:1px solid var(--border)}
+.detail-row{display:flex;justify-content:space-between;align-items:center;padding:7px 0;border-bottom:1px solid var(--border);font-size:.88rem}
+.detail-row:last-child{border-bottom:none}
+.d-label{color:var(--muted);font-weight:500}
+.d-val{font-weight:700;color:var(--text)}
+.claim-id-badge{font-family:var(--fh);font-size:1.25rem;font-weight:800;color:var(--blue);background:var(--blue-lt);padding:3px 14px;border-radius:8px}
+.info-note{background:#eff6ff;border:1px solid #bfdbfe;border-radius:10px;padding:13px 15px;font-size:.83rem;color:#1e40af;margin-bottom:20px;line-height:1.6;text-align:left}
+.action-btns{display:flex;gap:10px;justify-content:center;flex-wrap:wrap}
+</style>
+{% endblock %}
+{% block content %}
+<div class="ok-page">
+  <div class="ok-card">
+    <div class="ok-icon">✅</div>
+    <h1>Request Submitted!</h1>
+    <p class="sub">Aapki service request successfully register ho gayi hai.</p>
+    {% if claim %}
+    <div class="details-box">
+      <div class="detail-row"><span class="d-label">Claim ID</span><span class="claim-id-badge">#{{ claim.id }}</span></div>
+      <div class="detail-row"><span class="d-label">Customer</span><span class="d-val">{{ claim.customer_name }}</span></div>
+      <div class="detail-row"><span class="d-label">Device</span><span class="d-val">{{ claim.brand }} {{ claim.model_name }}</span></div>
+      <div class="detail-row"><span class="d-label">Serial No.</span><span class="d-val" style="font-family:monospace;font-size:.82rem">{{ claim.serial_number }}</span></div>
+      <div class="detail-row"><span class="d-label">Status</span><span style="background:#dbeafe;color:#1e40af;padding:3px 10px;border-radius:12px;font-size:.75rem;font-weight:700">Received</span></div>
+    </div>
+    {% endif %}
+    <div class="info-note">
+      📱 <strong>WhatsApp updates milenge</strong> jab bhi status change hoga.<br>
+      📋 <strong>Claim ID #{{ claim_id }}</strong> — screenshot lein ya note karein.
+    </div>
+    <div class="action-btns">
+      <a href="{{ url_for('track_claim') }}{% if claim %}?phone={{ claim.phone }}{% endif %}" class="btn btn-primary">📍 Track Claim</a>
+      <a href="{{ url_for('submit_claim') }}" class="btn btn-secondary">+ New Request</a>
+    </div>
+  </div>
+</div>
+{% endblock %}

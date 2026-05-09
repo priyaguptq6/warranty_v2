@@ -1,0 +1,67 @@
+{% extends "base.html" %}
+{% block title %}Technicians — MUDIT COMPUTERS{% endblock %}
+{% block extra_styles %}
+<style>
+.page-wrap{max-width:900px;margin:0 auto;padding:24px 18px 48px}
+.page-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:22px;flex-wrap:wrap;gap:12px}
+.page-header h1{font-family:var(--fh);font-size:1.5rem;font-weight:800;color:var(--brand)}
+.tech-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:14px;margin-bottom:28px}
+.tech-card{background:#fff;border-radius:13px;border:1px solid var(--border);box-shadow:var(--shadow);padding:20px}
+.tech-avatar{width:48px;height:48px;border-radius:50%;background:linear-gradient(135deg,#1d4ed8,#3b82f6);color:#fff;display:flex;align-items:center;justify-content:center;font-family:var(--fh);font-size:1.2rem;font-weight:800;flex-shrink:0}
+.tech-info{flex:1}
+.tech-name{font-family:var(--fh);font-size:1rem;font-weight:700;color:var(--brand)}
+.add-form{background:#fff;border-radius:14px;border:1px solid var(--border);box-shadow:var(--shadow);padding:22px}
+.add-form h3{font-family:var(--fh);font-size:1rem;font-weight:700;color:var(--brand);margin-bottom:16px}
+</style>
+{% endblock %}
+{% block content %}
+<div class="page-wrap">
+  <a href="{{ url_for('admin_dashboard') }}" class="btn btn-ghost btn-sm mb-16">← Dashboard</a>
+  <div class="page-header">
+    <h1>👨‍🔧 Technicians</h1>
+    <p class="text-muted text-sm">Shop ke technicians manage karein</p>
+  </div>
+
+  {% if technicians %}
+  <div class="tech-grid">
+    {% for t in technicians %}
+    <div class="tech-card">
+      <div style="display:flex;gap:14px;align-items:center">
+        <div class="tech-avatar">{{ t.name[0] }}</div>
+        <div class="tech-info">
+          <div class="tech-name">{{ t.name }}</div>
+          {% if t.phone %}<div class="text-sm text-muted">📞 {{ t.phone }}</div>{% endif %}
+          {% if t.skill %}<div class="text-xs" style="margin-top:4px;color:var(--blue);font-weight:600">🔧 {{ t.skill }}</div>{% endif %}
+        </div>
+      </div>
+    </div>
+    {% endfor %}
+  </div>
+  {% else %}
+  <div style="text-align:center;padding:40px;color:var(--muted);background:#fff;border-radius:14px;border:1px solid var(--border);margin-bottom:24px">
+    Koi technician nahi mila. Neeche add karein.
+  </div>
+  {% endif %}
+
+  <div class="add-form">
+    <h3>➕ Naya Technician Add Karein</h3>
+    <form method="POST" action="{{ url_for('add_technician') }}">
+      <div class="row-3">
+        <div class="form-group">
+          <label>Name <span class="req">*</span></label>
+          <input class="form-control" name="name" placeholder="Ramesh Kumar" required>
+        </div>
+        <div class="form-group">
+          <label>Phone</label>
+          <input class="form-control" name="phone" type="tel" placeholder="9876543210">
+        </div>
+        <div class="form-group">
+          <label>Specialization / Skill</label>
+          <input class="form-control" name="skill" placeholder="e.g. Laptops, Printers">
+        </div>
+      </div>
+      <button type="submit" class="btn btn-primary btn-sm">➕ Add Technician</button>
+    </form>
+  </div>
+</div>
+{% endblock %}

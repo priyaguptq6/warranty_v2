@@ -1,0 +1,241 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<title>MUDIT COMPUTERS — Service Status Kiosk</title>
+<style>
+:root{
+  --brand:#0f1e35;--blue:#1d4ed8;--gold:#f59e0b;
+  --success:#10b981;--bg:#050d1a;
+  --fh: system-ui, -apple-system, 'Segoe UI', Arial, sans-serif;
+  --fb: system-ui, -apple-system, 'Segoe UI', Arial, sans-serif;
+}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+html,body{height:100%;overflow:hidden}
+body{
+  font-family:var(--fb);background:var(--bg);color:#fff;
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  min-height:100vh;
+  background-image: radial-gradient(ellipse at 20% 50%, rgba(29,78,216,.15) 0%, transparent 60%),
+                    radial-gradient(ellipse at 80% 20%, rgba(245,158,11,.08) 0%, transparent 50%);
+}
+
+.kiosk-shell{width:100%;max-width:640px;padding:24px 20px;display:flex;flex-direction:column;gap:24px;align-items:center}
+
+.kiosk-logo{text-align:center}
+.kiosk-logo .icon{font-size:3rem;margin-bottom:8px}
+.kiosk-logo h1{font-family:var(--fh);font-size:clamp(1.6rem,5vw,2.4rem);font-weight:800;letter-spacing:-.5px}
+.kiosk-logo h1 span{color:var(--gold)}
+.kiosk-logo p{color:rgba(255,255,255,.5);font-size:.9rem;margin-top:4px}
+
+.search-card{
+  width:100%;background:rgba(255,255,255,.06);
+  border:1px solid rgba(255,255,255,.12);
+  border-radius:20px;padding:28px;backdrop-filter:blur(12px);
+}
+.search-card h2{font-family:var(--fh);font-size:1.2rem;font-weight:700;margin-bottom:18px;text-align:center;color:rgba(255,255,255,.9)}
+
+.big-input{
+  width:100%;background:rgba(255,255,255,.08);
+  border:2px solid rgba(255,255,255,.2);
+  border-radius:14px;padding:18px 20px;
+  font-family:var(--fb);font-size:1.3rem;font-weight:500;
+  color:#fff;outline:none;text-align:center;letter-spacing:1px;
+  transition:border-color .2s,box-shadow .2s
+}
+.big-input::placeholder{color:rgba(255,255,255,.3);letter-spacing:0}
+.big-input:focus{border-color:var(--gold);box-shadow:0 0 0 4px rgba(245,158,11,.15)}
+
+.search-btn{
+  width:100%;margin-top:14px;padding:16px;
+  background:linear-gradient(135deg,var(--blue),#3b82f6);
+  border:none;border-radius:14px;
+  font-family:var(--fh);font-size:1.1rem;font-weight:700;
+  color:#fff;cursor:pointer;transition:all .2s;
+  box-shadow:0 4px 20px rgba(29,78,216,.4)
+}
+.search-btn:hover{transform:translateY(-2px);box-shadow:0 8px 28px rgba(29,78,216,.5)}
+.search-btn:active{transform:translateY(0)}
+
+.search-tabs{display:flex;gap:8px;margin-bottom:18px}
+.stab{
+  flex:1;padding:10px;border-radius:10px;
+  background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.1);
+  color:rgba(255,255,255,.6);font-size:.85rem;font-weight:600;
+  font-family:var(--fb);cursor:pointer;transition:all .2s;text-align:center
+}
+.stab.active{background:rgba(29,78,216,.4);border-color:rgba(29,78,216,.6);color:#fff}
+
+/* Results */
+.results-area{width:100%;max-height:55vh;overflow-y:auto}
+.result-card{
+  background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.1);
+  border-radius:16px;padding:20px;margin-bottom:12px;
+  transition:transform .15s;cursor:default
+}
+.result-card:hover{transform:translateY(-2px)}
+.result-top{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:12px;gap:10px}
+.result-device{font-family:var(--fh);font-size:1.05rem;font-weight:700}
+.result-claim{font-size:.78rem;color:rgba(255,255,255,.5);margin-top:2px}
+.status-big{
+  display:inline-flex;align-items:center;gap:6px;
+  padding:6px 14px;border-radius:20px;
+  font-size:.82rem;font-weight:700;color:#fff;white-space:nowrap
+}
+.progress-bar{height:4px;background:rgba(255,255,255,.1);border-radius:4px;margin:10px 0}
+.progress-fill{height:100%;border-radius:4px;transition:width .6s ease}
+.result-meta{display:flex;gap:16px;font-size:.8rem;color:rgba(255,255,255,.5);flex-wrap:wrap}
+
+/* Loading */
+.loading-dots{display:none;text-align:center;padding:24px;color:rgba(255,255,255,.4);font-size:.9rem}
+.loading-dots.show{display:block}
+.dot{display:inline-block;width:8px;height:8px;border-radius:50%;background:var(--gold);margin:0 3px;animation:bounce .6s infinite alternate}
+.dot:nth-child(2){animation-delay:.2s}
+.dot:nth-child(3){animation-delay:.4s}
+@keyframes bounce{to{transform:translateY(-8px);opacity:.3}}
+
+.no-result{text-align:center;padding:32px;color:rgba(255,255,255,.4);font-size:.9rem}
+.no-result .icon{font-size:2.5rem;margin-bottom:10px}
+
+.kiosk-footer{color:rgba(255,255,255,.25);font-size:.75rem;text-align:center}
+
+/* Status step progress */
+.status-steps{display:flex;gap:3px;margin-top:10px}
+.step-dot{flex:1;height:5px;border-radius:3px;background:rgba(255,255,255,.12)}
+.step-dot.done{background:var(--success)}
+.step-dot.current{background:var(--gold);animation:pulse .8s infinite alternate}
+@keyframes pulse{to{opacity:.4}}
+</style>
+</head>
+<body>
+<div class="kiosk-shell">
+  <div class="kiosk-logo">
+    <div class="icon">🖥️</div>
+    <h1>MUDIT <span>COMPUTERS</span></h1>
+    <p>Apna device status check karein</p>
+  </div>
+
+  <div class="search-card">
+    <div class="search-tabs">
+      <div class="stab active" onclick="setTab('phone',this)">📱 Phone Number</div>
+      <div class="stab" onclick="setTab('claim',this)">🔖 Claim ID</div>
+    </div>
+    <input class="big-input" id="searchInput" type="tel"
+           placeholder="Phone number enter karein..." maxlength="15"
+           oninput="onInput()" onkeydown="if(event.key==='Enter')doSearch()">
+    <button class="search-btn" onclick="doSearch()">🔍 Status Check Karein</button>
+  </div>
+
+  <div class="loading-dots" id="loadingDots">
+    <span class="dot"></span><span class="dot"></span><span class="dot"></span>
+    <p style="margin-top:10px">Searching...</p>
+  </div>
+
+  <div class="results-area" id="resultsArea"></div>
+
+  <div class="kiosk-footer">
+    MUDIT COMPUTERS &nbsp;·&nbsp; Service Center &nbsp;·&nbsp;
+    Naye claim ke liye: <strong>/submit</strong>
+  </div>
+</div>
+
+<script>
+const STATUS_COLORS = {{ status_colors | tojson }};
+const STATUS_ORDER = [
+  "Received","Diagnosis In Progress","Awaiting Parts",
+  "Sent to Dealer","Under Repair","Repaired",
+  "Quality Check","Ready for Pickup","Delivered"
+];
+
+let currentTab = 'phone';
+
+function setTab(tab, el) {
+  currentTab = tab;
+  document.querySelectorAll('.stab').forEach(s => s.classList.remove('active'));
+  el.classList.add('active');
+  const inp = document.getElementById('searchInput');
+  inp.placeholder = tab === 'phone' ? 'Phone number enter karein...' : 'Claim ID enter karein...';
+  inp.type = tab === 'phone' ? 'tel' : 'number';
+  inp.value = '';
+  document.getElementById('resultsArea').innerHTML = '';
+}
+
+function onInput() {
+  const v = document.getElementById('searchInput').value.trim();
+  if (v.length >= 5) doSearch();
+}
+
+let searchTimer;
+function doSearch() {
+  const q = document.getElementById('searchInput').value.trim();
+  if (!q) return;
+
+  document.getElementById('loadingDots').classList.add('show');
+  document.getElementById('resultsArea').innerHTML = '';
+
+  clearTimeout(searchTimer);
+  searchTimer = setTimeout(() => {
+    fetch(`/api/kiosk/search?q=${encodeURIComponent(q)}`)
+      .then(r => r.json())
+      .then(renderResults)
+      .catch(() => {
+        document.getElementById('loadingDots').classList.remove('show');
+        document.getElementById('resultsArea').innerHTML =
+          '<div class="no-result"><div class="icon">⚠️</div><p>Connection error. Try again.</p></div>';
+      });
+  }, 300);
+}
+
+function getProgress(status) {
+  const idx = STATUS_ORDER.indexOf(status);
+  return idx === -1 ? 0 : idx;
+}
+
+function renderResults(data) {
+  document.getElementById('loadingDots').classList.remove('show');
+  const area = document.getElementById('resultsArea');
+
+  if (!data.length) {
+    area.innerHTML = `<div class="no-result">
+      <div class="icon">🔍</div>
+      <p>Koi claim nahi mila.<br>Phone number ya Claim ID check karein.</p>
+    </div>`;
+    return;
+  }
+
+  area.innerHTML = data.map(c => {
+    const color = STATUS_COLORS[c.status] || '#64748b';
+    const progress = getProgress(c.status);
+    const totalSteps = STATUS_ORDER.length;
+    const dots = STATUS_ORDER.map((s,i) => {
+      let cls = 'step-dot';
+      if (i < progress) cls += ' done';
+      else if (i === progress) cls += ' current';
+      return `<div class="${cls}"></div>`;
+    }).join('');
+
+    const isReady = ['Ready for Pickup','Repaired'].includes(c.status);
+    const isDelivered = c.status === 'Delivered';
+
+    return `<div class="result-card">
+      <div class="result-top">
+        <div>
+          <div class="result-device">${c.brand} ${c.model_name}</div>
+          <div class="result-claim">Claim #${c.id} &nbsp;·&nbsp; ${c.customer_name}</div>
+        </div>
+        <span class="status-big" style="background:${color}">${c.status}</span>
+      </div>
+      <div class="status-steps">${dots}</div>
+      <div class="result-meta" style="margin-top:12px">
+        <span>📅 Received: ${c.received_at ? c.received_at.substring(0,10) : '—'}</span>
+        <span>🔄 Updated: ${c.updated_at ? c.updated_at.substring(0,10) : '—'}</span>
+      </div>
+      ${isReady ? '<div style="margin-top:12px;background:rgba(34,197,94,.15);border:1px solid rgba(34,197,94,.3);border-radius:8px;padding:10px;font-size:.85rem;color:#86efac;text-align:center">✅ Aapka device READY hai! Pickup ke liye shop par aayein.</div>' : ''}
+      ${isDelivered ? '<div style="margin-top:12px;background:rgba(16,185,129,.15);border:1px solid rgba(16,185,129,.3);border-radius:8px;padding:10px;font-size:.85rem;color:#6ee7b7;text-align:center">🙏 Delivered! Feedback zaroor dein.</div>' : ''}
+    </div>`;
+  }).join('');
+}
+</script>
+</body>
+</html>

@@ -1,0 +1,135 @@
+{% extends "base.html" %}
+{% block title %}{{ dealer.name }} — Dealer Detail{% endblock %}
+{% block extra_styles %}
+<style>
+.page-wrap{max-width:1100px;margin:0 auto;padding:24px 20px 48px}
+.dealer-hero{background:linear-gradient(135deg,#0f1e35,#1d4ed8);border-radius:16px;padding:28px;margin-bottom:24px;color:#fff;display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:16px}
+.dealer-hero h1{font-family:var(--fh);font-size:1.5rem;font-weight:800;margin-bottom:6px}
+.dealer-hero .meta{font-size:.85rem;color:#93c5fd;line-height:1.8}
+.dealer-kpis{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:24px}
+.kpi{background:#fff;border-radius:12px;padding:18px;border:1px solid var(--border);box-shadow:var(--shadow);text-align:center}
+.kpi .val{font-family:var(--fh);font-size:1.8rem;font-weight:800;color:var(--brand)}
+.kpi .lbl{font-size:.72rem;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin-top:4px}
+.da-status-badge{
+  display:inline-flex;align-items:center;padding:3px 10px;border-radius:20px;
+  font-size:.73rem;font-weight:700;
+}
+.da-Pending{background:#fef3c7;color:#92400e}
+.da-In.Repair{background:#ede9fe;color:#5b21b6}
+.da-Returned{background:#d1fae5;color:#065f46}
+.da-Cancelled{background:#fee2e2;color:#991b1b}
+@media(max-width:700px){.dealer-kpis{grid-template-columns:1fr 1fr}}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="page-wrap">
+  <a href="{{ url_for('admin_dealers') }}" class="btn btn-ghost btn-sm mb-16">← Dealers List</a>
+
+  <div class="dealer-hero">
+    <div>
+      <h1>🏪 {{ dealer.name }}</h1>
+      <div class="meta">
+        {% if dealer.contact_person %}👤 {{ dealer.contact_person }}<br>{% endif %}
+        📞 {{ dealer.phone }}{% if dealer.email %} &nbsp;|&nbsp; ✉️ {{ dealer.email }}{% endif %}<br>
+        📍 {{ dealer.address }}{% if dealer.city %}, {{ dealer.city }}{% endif %}<br>
+        {% if dealer.specialization %}🔧 {{ dealer.specialization }}<br>{% endif %}
+        {% if dealer.gst_number %}📋 GST: {{ dealer.gst_number }}{% endif %}
+      </div>
+    </div>
+    <div style="display:flex;gap:8px;flex-wrap:wrap">
+      <a href="{{ url_for('edit_dealer', dealer_id=dealer.id) }}" class="btn btn-secondary btn-sm">✏️ Edit</a>
+      <span style="background:{{ '#d1fae5' if dealer.is_active else '#f3f4f6' }};
+                   color:{{ '#065f46' if dealer.is_active else '#6b7280' }};
+                   padding:6px 14px;border-radius:20px;font-size:.78rem;font-weight:700">
+        {{ '✅ Active' if dealer.is_active else '⏸ Inactive' }}
+      </span>
+    </div>
+  </div>
+
+  <!-- KPIs -->
+  <div class="dealer-kpis">
+    <div class="kpi">
+      <div class="val">{{ stats.total }}</div>
+      <div class="lbl">Total Items</div>
+    </div>
+    <div class="kpi">
+      <div class="val" style="color:#f97316">{{ stats.pending }}</div>
+      <div class="lbl">Pending</div>
+    </div>
+    <div class="kpi">
+      <div class="val" style="color:var(--success)">{{ stats.returned }}</div>
+      <div class="lbl">Returned</div>
+    </div>
+    <div class="kpi">
+      <div class="val" style="color:var(--blue)">₹{{ '{:,.0f}'.format(stats.total_cost) }}</div>
+      <div class="lbl">Total Paid</div>
+    </div>
+  </div>
+
+  <!-- Items Table -->
+  <div class="card">
+    <div class="card-header">📋 Is Dealer Ko Bheje Gaye Items</div>
+    {% if stats.assignments %}
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>Claim #</th>
+            <th>Customer</th>
+            <th>Device</th>
+            <th>Sent Date</th>
+            <th>Expected Return</th>
+            <th>Actual Return</th>
+            <th>Job No.</th>
+            <th>Repair Type</th>
+            <th>Cost</th>
+            <th>Status</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for item in stats.assignments %}
+          <tr onclick="window.location='{{ url_for('admin_claim_detail', claim_id=item.claim_id) }}'" style="cursor:pointer">
+            <td><strong style="color:var(--blue)">#{{ item.claim_id }}</strong></td>
+            <td>
+              <div class="fw-600">{{ item.customer_name }}</div>
+              <div class="text-xs text-muted">{{ item.phone }}</div>
+            </td>
+            <td>
+              <div>{{ item.brand }} {{ item.model_name }}</div>
+              <div class="text-xs mono text-muted">{{ item.serial_number }}</div>
+            </td>
+            <td class="text-sm">{{ item.sent_date or '—' }}</td>
+            <td class="text-sm">{{ item.expected_return or '—' }}</td>
+            <td class="text-sm">{{ item.actual_return or '—' }}</td>
+            <td class="text-sm mono">{{ item.dealer_job_no or '—' }}</td>
+            <td class="text-sm">
+              {% if item.repair_type == 'warranty' %}
+                <span style="color:var(--success);font-weight:600">Warranty</span>
+              {% elif item.repair_type == 'chargeable' %}
+                <span style="color:var(--blue);font-weight:600">Chargeable</span>
+              {% else %}
+                {{ item.repair_type or '—' }}
+              {% endif %}
+            </td>
+            <td class="text-sm fw-600">{{ '₹'+'{:,.0f}'.format(item.dealer_cost) if item.dealer_cost else '—' }}</td>
+            <td>
+              <span class="da-status-badge da-{{ item.status.replace(' ','') }}"
+                    style="background:{{ '#fef3c7' if item.status=='Pending' else ('#d1fae5' if item.status=='Returned' else '#ede9fe') }};
+                           color:{{ '#92400e' if item.status=='Pending' else ('#065f46' if item.status=='Returned' else '#5b21b6') }}">
+                {{ item.status }}
+              </span>
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+    {% else %}
+    <div class="card-body" style="text-align:center;padding:40px;color:var(--muted)">
+      Is dealer ko abhi koi item nahi bheja gaya.
+    </div>
+    {% endif %}
+  </div>
+</div>
+{% endblock %}

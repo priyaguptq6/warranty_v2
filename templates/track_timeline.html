@@ -1,0 +1,38 @@
+{% extends "base.html" %}
+{% block title %}Claim #{{ claim_id }} Timeline{% endblock %}
+{% block extra_styles %}
+<style>
+.tl-page{max-width:560px;margin:32px auto;padding:0 16px 48px}
+.tl-page h1{font-family:var(--fh);font-size:1.3rem;font-weight:800;color:var(--brand);margin-bottom:20px}
+.tl-wrap{background:#fff;border-radius:14px;box-shadow:var(--shadow);border:1px solid var(--border);padding:24px}
+.tl-item{display:flex;gap:14px;padding-bottom:20px;position:relative}
+.tl-item:not(:last-child)::before{content:'';position:absolute;left:13px;top:28px;width:2px;bottom:0;background:var(--border)}
+.tl-dot{width:28px;height:28px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:.75rem;color:#fff;flex-shrink:0;z-index:1}
+.tl-body{flex:1;padding-top:3px}
+.tl-title{font-weight:700;font-size:.9rem}
+.tl-meta{font-size:.75rem;color:var(--muted);margin-top:2px}
+.tl-note{font-size:.8rem;color:var(--text);background:#f8fafc;padding:7px 10px;border-radius:6px;border-left:3px solid var(--border);margin-top:6px}
+</style>
+{% endblock %}
+{% block content %}
+<div class="tl-page">
+  <a href="{{ url_for('track_claim') }}" class="btn btn-ghost btn-sm mb-16">← Back to Track</a>
+  <h1>📋 Claim #{{ claim_id }} — Full Timeline</h1>
+  <div class="tl-wrap">
+    {% if history %}
+    {% for h in history %}
+    <div class="tl-item">
+      <div class="tl-dot" style="background:{{ status_colors.get(h.new_status,'#3b82f6') }}">✓</div>
+      <div class="tl-body">
+        <div class="tl-title">{{ h.new_status }}</div>
+        <div class="tl-meta">{{ h.changed_at[:16] if h.changed_at else '' }}</div>
+        {% if h.note %}<div class="tl-note">{{ h.note }}</div>{% endif %}
+      </div>
+    </div>
+    {% endfor %}
+    {% else %}
+    <p class="text-muted text-sm">Koi history nahi mili.</p>
+    {% endif %}
+  </div>
+</div>
+{% endblock %}

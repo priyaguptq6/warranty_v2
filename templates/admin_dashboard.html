@@ -1,0 +1,173 @@
+<!-- admin_dashboard.html -->
+{% extends "base.html" %}
+{% block title %}Dashboard — MUDIT COMPUTERS{% endblock %}
+{% block extra_styles %}
+<style>
+.dash{max-width:1300px;margin:0 auto;padding:22px 18px 48px}
+.dash-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:22px;flex-wrap:wrap;gap:10px}
+.dash-header h1{font-family:var(--fh);font-size:1.5rem;font-weight:800;color:var(--brand)}
+.kpi-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px;margin-bottom:22px}
+.kpi{background:#fff;border-radius:12px;padding:16px 18px;border:1px solid var(--border);box-shadow:var(--shadow);transition:transform .15s;text-decoration:none!important;display:block;color:var(--text)}
+.kpi:hover{transform:translateY(-2px)}
+.kpi .k-icon{font-size:1.4rem;float:right}
+.kpi .k-lbl{font-size:.7rem;font-weight:700;text-transform:uppercase;letter-spacing:.6px;color:var(--muted);margin-bottom:6px}
+.kpi .k-val{font-family:var(--fh);font-size:1.8rem;font-weight:800;color:var(--brand);line-height:1}
+.kpi.blue{border-top:3px solid #3b82f6}.kpi.orange{border-top:3px solid #f97316}
+.kpi.yellow{border-top:3px solid #f59e0b}.kpi.green{border-top:3px solid #10b981}
+.kpi.purple{border-top:3px solid #8b5cf6}.kpi.gold{border-top:3px solid #d97706}
+.kpi.dark{border-top:3px solid #0f1e35}.kpi.teal{border-top:3px solid #14b8a6}
+
+.qr-bar{background:linear-gradient(135deg,#0f1e35,#1d4ed8);border-radius:12px;padding:16px 20px;margin-bottom:18px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px}
+.qr-bar h3{font-family:var(--fh);font-size:.9rem;font-weight:700;color:#fff;margin-bottom:2px}
+.qr-bar p{color:#93c5fd;font-size:.78rem}
+.url-chip{background:rgba(255,255,255,.12);color:#fff;padding:5px 13px;border-radius:6px;font-family:monospace;font-size:.82rem;border:1px solid rgba(255,255,255,.2)}
+
+.toolbar{background:#fff;border-radius:12px;padding:14px 16px;border:1px solid var(--border);margin-bottom:16px;display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+.search-box{flex:1;min-width:180px;position:relative}
+.search-box input{padding-left:34px}
+.search-box::before{content:'🔍';position:absolute;left:10px;top:50%;transform:translateY(-50%);font-size:.82rem;z-index:1}
+.filter-pills{display:flex;gap:5px;flex-wrap:wrap}
+.fpill{padding:5px 11px;border-radius:20px;font-size:.75rem;font-weight:600;border:1.5px solid var(--border);background:#fff;color:var(--muted);cursor:pointer;transition:all .15s;text-decoration:none}
+.fpill:hover{background:#f1f5f9;text-decoration:none}
+.fpill.active{background:var(--brand);color:#fff;border-color:var(--brand)}
+
+.claims-wrap{background:#fff;border-radius:12px;border:1px solid var(--border);box-shadow:var(--shadow);overflow:hidden}
+.claims-header{padding:14px 18px;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:center}
+.claims-header h3{font-family:var(--fh);font-size:.95rem;font-weight:700}
+.td-id{font-weight:700;color:var(--blue);font-size:.8rem}
+.td-name{font-weight:600}
+.td-meta{font-size:.77rem;color:var(--muted)}
+.empty{text-align:center;padding:56px 20px;color:var(--muted)}
+.empty .icon{font-size:2.5rem;margin-bottom:12px}
+.empty h3{font-family:var(--fh);color:var(--text)}
+</style>
+{% endblock %}
+{% block content %}
+<div class="dash">
+  <div class="dash-header">
+    <div>
+      <h1>🖥️ Service Dashboard</h1>
+      <div class="text-muted text-sm">{{ claims|length }} claim(s) showing</div>
+    </div>
+    <div style="display:flex;gap:8px">
+      <a href="{{ url_for('kiosk') }}" class="btn btn-secondary btn-sm" target="_blank">🖥️ Kiosk</a>
+      <a href="{{ url_for('admin_dealers') }}" class="btn btn-secondary btn-sm">🏪 Dealers</a>
+      <a href="{{ url_for('admin_technicians') }}" class="btn btn-secondary btn-sm">👨‍🔧 Technicians</a>
+      <a href="{{ url_for('submit_claim') }}" class="btn btn-primary btn-sm" target="_blank">+ New</a>
+    </div>
+  </div>
+
+  <div class="qr-bar">
+    <div><h3>📱 Customer Form URL</h3><p>QR code scan karein ya ye URL share karein</p></div>
+    <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap">
+      <span class="url-chip">http://{{ local_ip }}:5000/submit</span>
+      <a href="{{ url_for('kiosk') }}" target="_blank" class="btn btn-secondary btn-sm">Open Kiosk</a>
+    </div>
+  </div>
+
+  <!-- KPIs -->
+  <div class="kpi-grid">
+    <a href="{{ url_for('admin_dashboard') }}" class="kpi dark">
+      <div class="k-icon">📋</div><div class="k-lbl">Total</div><div class="k-val">{{ stats.total }}</div>
+    </a>
+    <a href="?status=Received" class="kpi blue">
+      <div class="k-icon">📥</div><div class="k-lbl">New</div><div class="k-val">{{ stats.received }}</div>
+    </a>
+    <a href="?status=Under+Repair" class="kpi orange">
+      <div class="k-icon">🔧</div><div class="k-lbl">In Repair</div><div class="k-val">{{ stats.in_repair }}</div>
+    </a>
+    <a href="?status=Sent+to+Dealer" class="kpi purple">
+      <div class="k-icon">📦</div><div class="k-lbl">At Dealer</div><div class="k-val">{{ stats.at_dealer }}</div>
+    </a>
+    <a href="?status=Ready+for+Pickup" class="kpi yellow">
+      <div class="k-icon">✅</div><div class="k-lbl">Ready</div><div class="k-val">{{ stats.ready }}</div>
+    </a>
+    <a href="?status=Delivered" class="kpi green">
+      <div class="k-icon">🚀</div><div class="k-lbl">Delivered</div><div class="k-val">{{ stats.delivered }}</div>
+    </a>
+    <div class="kpi gold">
+      <div class="k-icon">💰</div><div class="k-lbl">Revenue</div>
+      <div class="k-val" style="font-size:1.3rem">{{ stats.revenue }}</div>
+    </div>
+    <div class="kpi teal">
+      <div class="k-icon">⏳</div><div class="k-lbl">Balance Due</div>
+      <div class="k-val" style="font-size:1.3rem">{{ stats.pending_balance }}</div>
+    </div>
+  </div>
+
+  <!-- Search / Filter -->
+  <div class="toolbar">
+    <div class="search-box">
+      <form method="GET" id="sForm">
+        <input class="form-control" name="q" placeholder="Name, phone, model, serial..."
+               value="{{ search_query }}" id="sInput">
+        {% if status_filter %}<input type="hidden" name="status" value="{{ status_filter }}">{% endif %}
+      </form>
+    </div>
+    <div class="filter-pills">
+      <a href="{{ url_for('admin_dashboard') }}" class="fpill {% if not status_filter %}active{% endif %}">All</a>
+      {% for st in all_statuses %}
+      <a href="?status={{ st|urlencode }}" class="fpill {% if status_filter==st %}active{% endif %}"
+         style="{% if status_filter==st %}background:{{ status_colors[st] }};border-color:{{ status_colors[st] }};color:#fff{% endif %}">
+        {{ st }}
+      </a>
+      {% endfor %}
+    </div>
+  </div>
+
+  <!-- Claims Table -->
+  <div class="claims-wrap">
+    <div class="claims-header">
+      <h3>Service Claims</h3>
+      <span class="text-xs text-muted">Row click karein details ke liye</span>
+    </div>
+    {% if claims %}
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>ID</th><th>Customer</th><th class="hide-xs">Device</th>
+            <th class="hide-xs">Warranty</th><th>Status</th>
+            <th class="hide-xs">Dealer</th><th class="hide-xs">Received</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for c in claims %}
+          <tr onclick="window.location='{{ url_for('admin_claim_detail', claim_id=c.id) }}'" style="cursor:pointer">
+            <td><span class="td-id">#{{ c.id }}</span></td>
+            <td>
+              <div class="td-name">{{ c.customer_name }}</div>
+              <div class="td-meta">{{ c.phone }}</div>
+            </td>
+            <td class="hide-xs">
+              <div class="text-sm fw-600">{{ c.brand }} {{ c.model_name }}</div>
+              <div class="td-meta mono">{{ c.serial_number }}</div>
+            </td>
+            <td class="hide-xs">
+              <span style="font-size:.78rem;font-weight:600;
+                color:{% if c.warranty_status=='Under Warranty' %}#059669{% elif c.warranty_status=='Out of Warranty' %}#dc2626{% else %}#94a3b8{% endif %}">
+                {{ c.warranty_status }}
+              </span>
+            </td>
+            <td><span class="badge" style="background:{{ status_colors.get(c.status,'#64748b') }}">{{ c.status }}</span></td>
+            <td class="hide-xs text-sm">{{ c.dealer_name or '—' }}</td>
+            <td class="hide-xs td-meta">{{ c.received_at[:10] if c.received_at else '—' }}</td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+    {% else %}
+    <div class="empty"><div class="icon">📭</div><h3>Koi claim nahi mila</h3></div>
+    {% endif %}
+  </div>
+</div>
+{% endblock %}
+{% block scripts %}
+<script>
+let t;
+document.getElementById('sInput').addEventListener('input',function(){
+  clearTimeout(t);t=setTimeout(()=>document.getElementById('sForm').submit(),400);
+});
+</script>
+{% endblock %}

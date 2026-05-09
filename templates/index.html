@@ -1,0 +1,58 @@
+{% extends "base.html" %}
+{% block title %}MUDIT COMPUTERS — Professional Service Center{% endblock %}
+{% block extra_styles %}
+<style>
+.hero{background:linear-gradient(135deg,#0f1e35 0%,#1d4ed8 60%,#0f1e35 100%);padding:72px 20px 88px;text-align:center;position:relative;overflow:hidden}
+.hero::before,.hero::after{content:'';position:absolute;border-radius:50%;background:rgba(255,255,255,.04)}
+.hero::before{width:420px;height:420px;top:-150px;right:-100px}
+.hero::after{width:260px;height:260px;bottom:-80px;left:-60px}
+.hero h1{font-family:var(--fh);font-size:clamp(2rem,6vw,3.2rem);font-weight:800;color:#fff;letter-spacing:-1px;margin-bottom:14px;position:relative}
+.hero h1 span{color:#fbbf24}
+.hero p{color:#93c5fd;font-size:clamp(.9rem,3vw,1.1rem);max-width:500px;margin:0 auto 36px;position:relative}
+.hero-btns{display:flex;gap:14px;justify-content:center;flex-wrap:wrap;position:relative}
+.btn-hero{background:#fff;color:var(--blue);font-weight:700;padding:13px 28px;font-size:1rem;border-radius:10px;box-shadow:0 4px 18px rgba(0,0,0,.15)}
+.btn-hero:hover{background:#f0f9ff;transform:translateY(-2px);text-decoration:none}
+.btn-hero-ghost{background:rgba(255,255,255,.1);color:#fff;font-weight:600;padding:13px 28px;font-size:1rem;border-radius:10px;border:1.5px solid rgba(255,255,255,.25)}
+.btn-hero-ghost:hover{background:rgba(255,255,255,.18);text-decoration:none}
+
+.features{max-width:960px;margin:-44px auto 56px;padding:0 18px;display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:16px}
+.feat{background:#fff;border-radius:14px;padding:24px;box-shadow:0 8px 32px rgba(15,30,53,.1);border:1px solid var(--border);transition:transform .15s}
+.feat:hover{transform:translateY(-4px)}
+.feat .ico{font-size:2.2rem;margin-bottom:14px}
+.feat h3{font-family:var(--fh);font-size:1rem;font-weight:700;color:var(--brand);margin-bottom:7px}
+.feat p{font-size:.85rem;color:var(--muted);line-height:1.5}
+
+.cta{background:var(--brand);padding:52px 20px;text-align:center}
+.cta h2{font-family:var(--fh);font-size:1.7rem;font-weight:800;color:#fff;margin-bottom:10px}
+.cta p{color:#94a3b8;margin-bottom:26px}
+</style>
+{% endblock %}
+{% block content %}
+<div class="hero">
+  <div style="font-size:3rem;margin-bottom:18px;position:relative">🖥️</div>
+  <h1>MUDIT <span>COMPUTERS</span><br>Service Center</h1>
+  <p>Professional laptop & electronics repair — fast turnaround, real-time updates, AI-powered tracking.</p>
+  <div class="hero-btns">
+    <a href="{{ url_for('submit_claim') }}" class="btn btn-hero">🛠️ Submit Service Request</a>
+    <a href="{{ url_for('track_claim') }}" class="btn btn-hero-ghost">📍 Track My Device</a>
+    <a href="{{ url_for('kiosk') }}" class="btn btn-hero-ghost">🖥️ Status Kiosk</a>
+  </div>
+</div>
+
+<div class="features">
+  <div class="feat"><div class="ico">🤖</div><h3>AI Auto-Fill</h3><p>Device ka photo lo — AI brand, model aur serial number automatically detect kar leta hai.</p></div>
+  <div class="feat"><div class="ico">📱</div><h3>WhatsApp Updates</h3><p>Har status change par automatic WhatsApp message aapke phone par aata hai.</p></div>
+  <div class="feat"><div class="ico">🏪</div><h3>Dealer Tracking</h3><p>Kaunsa item kis dealer ke paas hai, kab bheja, kab wapas aaya — sab track hota hai.</p></div>
+  <div class="feat"><div class="ico">📸</div><h3>Photo Proof</h3><p>Device receive aur deliver karte waqt photos — koi bhi argument nahi, sab record mein.</p></div>
+  <div class="feat"><div class="ico">💰</div><h3>Payment Tracking</h3><p>Advance, final payment, balance due — sab ek jagah track karo with payment mode.</p></div>
+  <div class="feat"><div class="ico">🖥️</div><h3>Shop Kiosk</h3><p>Counter par touch-screen kiosk — customer khud apna status check kar sakta hai.</p></div>
+</div>
+
+<div class="cta">
+  <h2>Aaj hi apni device repair ke liye bhejein</h2>
+  <p>Online form bharein, device drop karein — baaki hum sambhaalenge.</p>
+  <a href="{{ url_for('submit_claim') }}" class="btn btn-primary" style="font-size:1rem;padding:13px 28px">
+    Submit Service Request →
+  </a>
+</div>
+{% endblock %}

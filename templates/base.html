@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>{% block title %}MUDIT COMPUTERS{% endblock %}</title>
+<link rel="manifest" href="{{ url_for('static', filename='manifest.json') }}">
+<meta name="theme-color" content="#0f1e35">
+<link rel="apple-touch-icon" href="{{ url_for('static', filename='icons/icon-192.svg') }}">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<style>
+:root {
+  --brand:    #0f1e35;
+  --blue:     #1d4ed8;
+  --blue-lt:  #dbeafe;
+  --gold:     #f59e0b;
+  --success:  #10b981;
+  --danger:   #ef4444;
+  --warn:     #f59e0b;
+  --text:     #1e293b;
+  --muted:    #64748b;
+  --bg:       #f1f5f9;
+  --card:     #ffffff;
+  --border:   #e2e8f0;
+  --radius:   12px;
+  --shadow:   0 2px 16px rgba(15,30,53,.07);
+  --shadow-lg:0 8px 40px rgba(15,30,53,.12);
+  --fh: system-ui, -apple-system, 'Segoe UI', Arial, sans-serif;
+  --fb: system-ui, -apple-system, 'Segoe UI', Arial, sans-serif;
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+body{font-family:var(--fb);background:var(--bg);color:var(--text);min-height:100vh;line-height:1.6}
+a{color:var(--blue);text-decoration:none}
+a:hover{text-decoration:underline}
+
+/* ── Topbar ── */
+.topbar{
+  background:var(--brand);
+  height:56px;padding:0 20px;
+  display:flex;align-items:center;justify-content:space-between;
+  position:sticky;top:0;z-index:200;
+  box-shadow:0 2px 12px rgba(0,0,0,.25);
+}
+.topbar-brand{
+  font-family:var(--fh);font-size:1.1rem;font-weight:800;
+  color:#fff;letter-spacing:-.5px;display:flex;align-items:center;gap:8px
+}
+.topbar-brand span{color:var(--gold)}
+.topbar-links a{
+  color:#94a3b8;font-size:.82rem;margin-left:18px;
+  transition:color .2s;font-weight:500
+}
+.topbar-links a:hover{color:#fff;text-decoration:none}
+.topbar-links a.active-link{color:#fff}
+
+/* ── Flash ── */
+.flash-wrap{padding:8px 20px 0}
+.flash{padding:11px 16px;border-radius:8px;margin-bottom:6px;font-size:.875rem;font-weight:500}
+.flash.success{background:#d1fae5;color:#065f46;border:1px solid #6ee7b7}
+.flash.error  {background:#fee2e2;color:#991b1b;border:1px solid #fca5a5}
+.flash.info   {background:#dbeafe;color:#1e40af;border:1px solid #93c5fd}
+
+/* ── Buttons ── */
+.btn{
+  display:inline-flex;align-items:center;gap:6px;
+  padding:9px 18px;border-radius:8px;
+  font-family:var(--fb);font-size:.875rem;font-weight:600;
+  cursor:pointer;border:none;transition:all .18s;text-decoration:none!important
+}
+.btn-primary  {background:var(--blue);color:#fff}
+.btn-primary:hover{background:#1e40af;transform:translateY(-1px)}
+.btn-success  {background:var(--success);color:#fff}
+.btn-success:hover{background:#059669}
+.btn-danger   {background:var(--danger);color:#fff}
+.btn-danger:hover{background:#dc2626}
+.btn-secondary{background:#fff;color:var(--text);border:1.5px solid var(--border)}
+.btn-secondary:hover{background:#f8fafc}
+.btn-ghost    {background:transparent;color:var(--muted);border:1.5px solid var(--border)}
+.btn-ghost:hover{background:#f1f5f9;color:var(--text)}
+.btn-sm{padding:6px 12px;font-size:.78rem;border-radius:6px}
+.btn-xs{padding:4px 9px;font-size:.73rem;border-radius:5px}
+
+/* ── Badge ── */
+.badge{display:inline-flex;align-items:center;padding:3px 10px;border-radius:20px;font-size:.73rem;font-weight:700;color:#fff;white-space:nowrap}
+
+/* ── Card ── */
+.card{background:var(--card);border-radius:var(--radius);box-shadow:var(--shadow);border:1px solid var(--border);overflow:hidden}
+.card-header{background:#f8fafc;border-bottom:1px solid var(--border);padding:14px 20px;font-family:var(--fh);font-size:.9rem;font-weight:700;display:flex;align-items:center;gap:8px}
+.card-body{padding:20px}
+
+/* ── Forms ── */
+.form-group{margin-bottom:16px}
+.form-group label{display:block;font-size:.8rem;font-weight:700;margin-bottom:5px;color:var(--text);text-transform:uppercase;letter-spacing:.4px}
+.form-group label .req{color:var(--danger);margin-left:2px}
+.form-control{
+  width:100%;padding:9px 13px;border:1.5px solid var(--border);
+  border-radius:8px;font-family:var(--fb);font-size:.9rem;
+  background:#fff;color:var(--text);transition:border-color .2s,box-shadow .2s;outline:none
+}
+.form-control:focus{border-color:var(--blue);box-shadow:0 0 0 3px rgba(29,78,216,.1)}
+textarea.form-control{resize:vertical;min-height:80px}
+select.form-control{cursor:pointer}
+.form-hint{font-size:.75rem;color:var(--muted);margin-top:4px}
+.row-2{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.row-3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:14px}
+
+/* ── Table ── */
+.table-wrap{overflow-x:auto}
+table{width:100%;border-collapse:collapse;font-size:.85rem}
+thead th{background:#f8fafc;padding:10px 14px;text-align:left;font-size:.72rem;font-weight:700;text-transform:uppercase;letter-spacing:.6px;color:var(--muted);border-bottom:1px solid var(--border)}
+tbody tr{border-bottom:1px solid #f1f5f9;transition:background .1s}
+tbody tr:hover{background:#f8fafc}
+tbody tr:last-child{border-bottom:none}
+td{padding:11px 14px;vertical-align:middle}
+
+/* ── Utility ── */
+.text-muted{color:var(--muted)}
+.text-sm{font-size:.82rem}
+.text-xs{font-size:.73rem}
+.fw-600{font-weight:600}
+.fw-700{font-weight:700}
+.mt-12{margin-top:12px}
+.mb-16{margin-bottom:16px}
+.mono{font-family:monospace}
+.divider{border:none;border-top:1px solid var(--border);margin:18px 0}
+
+@media(max-width:600px){
+  .topbar{padding:0 14px}
+  .topbar-links a{margin-left:10px}
+  .row-2,.row-3{grid-template-columns:1fr}
+  .hide-xs{display:none}
+}
+</style>
+{% block extra_styles %}{% endblock %}
+</head>
+<body>
+<nav class="topbar">
+  <div class="topbar-brand">🖥️ MUDIT <span>COMPUTERS</span></div>
+  <div class="topbar-links">
+    <a href="{{ url_for('submit_claim') }}">New Claim</a>
+    <a href="{{ url_for('track_claim') }}">Track</a>
+    <a href="{{ url_for('kiosk') }}">Kiosk</a>
+    {% if session.get('admin_logged_in') %}
+      <a href="{{ url_for('admin_dashboard') }}">Dashboard</a>
+      <a href="{{ url_for('admin_dealers') }}">Dealers</a>
+      <a href="{{ url_for('admin_reminders') }}">🔔 Reminders</a>
+      <a href="{{ url_for('admin_logout') }}" style="color:#f87171">Logout</a>
+    {% else %}
+      <a href="{{ url_for('admin_login') }}">Admin</a>
+    {% endif %}
+  </div>
+</nav>
+
+{% with messages = get_flashed_messages(with_categories=true) %}
+  {% if messages %}
+    <div class="flash-wrap">
+      {% for cat,msg in messages %}
+        <div class="flash {{ cat }}">{{ msg }}</div>
+      {% endfor %}
+    </div>
+  {% endif %}
+{% endwith %}
+
+{% block content %}{% endblock %}
+{% block scripts %}{% endblock %}
+<script>
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('/service-worker.js').then(reg => {
+      console.log('PWA service worker registered.', reg.scope);
+    }).catch(err => {
+      console.warn('Service worker registration failed:', err);
+    });
+  });
+}
+let deferredInstallPrompt;
+window.addEventListener('beforeinstallprompt', event => {
+  event.preventDefault();
+  deferredInstallPrompt = event;
+  if (!document.getElementById('install-app-button')) {
+    const btn = document.createElement('a');
+    btn.id = 'install-app-button';
+    btn.className = 'btn btn-secondary';
+    btn.href = '#';
+    btn.textContent = 'Install App';
+    btn.style.marginLeft = '14px';
+    btn.onclick = async e => {
+      e.preventDefault();
+      if (!deferredInstallPrompt) return;
+      deferredInstallPrompt.prompt();
+      const choiceResult = await deferredInstallPrompt.userChoice;
+      if (choiceResult.outcome === 'accepted') {
+        console.log('App install accepted');
+      }
+      deferredInstallPrompt = null;
+    };
+    document.querySelector('.topbar-links')?.appendChild(btn);
+  }
+});
+</script>
+</body>
+</html>

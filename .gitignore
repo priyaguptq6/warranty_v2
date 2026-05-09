@@ -1,0 +1,12 @@
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+*.db
+warranty.db
+static/uploads/
+.env
+*.env
+.DS_Store
+instance/
+*.log

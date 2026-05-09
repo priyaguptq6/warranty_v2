@@ -1,0 +1,16 @@
+# MUDIT COMPUTERS — Warranty System Configuration
+# Yahan apni settings fill karein
+
+# Anthropic API Key (AI features ke liye)
+# Get from: https://console.anthropic.com/
+ANTHROPIC_API_KEY=your_api_key_here
+
+# Gmail App Password (email notifications ke liye)
+# Get from: Google Account > Security > App Passwords
+SMTP_USER=your_gmail@gmail.com
+SMTP_PASSWORD=your_16_char_app_password
+
+# Shop Details
+SHOP_NAME=MUDIT COMPUTERS
+SHOP_PHONE=+91-XXXXXXXXXX
+SHOP_ADDRESS=Your Shop Address, Shahjahanpur

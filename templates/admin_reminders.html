@@ -1,0 +1,294 @@
+{% extends "base.html" %}
+{% block title %}Auto Reminders — MUDIT COMPUTERS{% endblock %}
+{% block extra_styles %}
+<style>
+.page{max-width:1100px;margin:0 auto;padding:22px 18px 56px}
+.page-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:24px;flex-wrap:wrap;gap:12px}
+.page-header h1{font-family:var(--fh);font-size:1.5rem;font-weight:800;color:var(--brand)}
+
+/* Scheduler banner */
+.sched-banner{border-radius:14px;padding:18px 22px;margin-bottom:22px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px}
+.sched-banner.on{background:linear-gradient(135deg,#064e3b,#065f46);border:1px solid #6ee7b7}
+.sched-banner.off{background:linear-gradient(135deg,#7f1d1d,#991b1b);border:1px solid #fca5a5}
+.sched-banner h3{font-family:var(--fh);font-size:1rem;font-weight:700;color:#fff;margin-bottom:3px}
+.sched-banner p{font-size:.8rem;color:rgba(255,255,255,.65);margin:0}
+.pulse-dot{width:11px;height:11px;border-radius:50%;background:#34d399;box-shadow:0 0 0 0 rgba(52,211,153,.4);animation:pulse 1.4s infinite;flex-shrink:0}
+.pulse-dot.dead{background:#f87171;box-shadow:none;animation:none}
+@keyframes pulse{0%{box-shadow:0 0 0 0 rgba(52,211,153,.5)}70%{box-shadow:0 0 0 8px rgba(52,211,153,0)}100%{box-shadow:0 0 0 0 rgba(52,211,153,0)}}
+
+/* Job cards */
+.jobs-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:14px;margin-bottom:26px}
+.job-card{background:#fff;border-radius:13px;border:1px solid var(--border);box-shadow:var(--shadow);padding:18px;position:relative;overflow:hidden}
+.job-card::before{content:'';position:absolute;inset:0 0 auto 0;height:3px}
+.jc-red::before{background:#ef4444}
+.jc-amber::before{background:#f59e0b}
+.jc-purple::before{background:#8b5cf6}
+.jc-blue::before{background:#3b82f6}
+.job-icon{font-size:1.7rem;margin-bottom:8px}
+.job-name{font-family:var(--fh);font-size:.88rem;font-weight:700;color:var(--brand);margin-bottom:4px}
+.job-desc{font-size:.76rem;color:var(--muted);margin-bottom:10px;line-height:1.5}
+.next-run{font-size:.72rem;color:var(--blue);margin-bottom:10px}
+.next-run b{background:var(--blue-lt);padding:2px 7px;border-radius:5px}
+
+/* Alert rows */
+.sec-title{font-family:var(--fh);font-size:.95rem;font-weight:700;color:var(--brand);margin-bottom:12px;display:flex;align-items:center;gap:8px}
+.cnt{width:20px;height:20px;border-radius:50%;display:inline-flex;align-items:center;justify-content:center;font-size:.68rem;font-weight:800;color:#fff}
+.cnt-red{background:var(--danger)}
+.cnt-amber{background:var(--warn)}
+.cnt-green{background:var(--success)}
+
+.overdue-item{background:#fff;border-radius:10px;border:1px solid #fecaca;border-left:4px solid #ef4444;padding:13px 15px;margin-bottom:9px;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px}
+.overdue-item .days{background:#fee2e2;color:#991b1b;padding:3px 9px;border-radius:12px;font-size:.72rem;font-weight:700;white-space:nowrap}
+.pickup-item{background:#fff;border-radius:10px;border:1px solid #fde68a;border-left:4px solid #f59e0b;padding:13px 15px;margin-bottom:9px;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px}
+
+/* Manual send */
+.manual-box{background:#fff;border-radius:13px;border:1px solid var(--border);box-shadow:var(--shadow);padding:20px;margin-bottom:18px}
+.manual-box h3{font-family:var(--fh);font-size:.9rem;font-weight:700;color:var(--brand);margin-bottom:14px}
+
+/* Schedule info */
+.sched-info{background:linear-gradient(135deg,#0f1e35,#1d4ed8);border-radius:13px;padding:18px 20px;color:#fff;margin-bottom:18px}
+.sched-info h4{font-family:var(--fh);font-size:.88rem;font-weight:700;margin-bottom:12px}
+.sched-row{display:flex;justify-content:space-between;align-items:center;font-size:.78rem;padding:6px 0;border-bottom:1px solid rgba(255,255,255,.08)}
+.sched-row:last-child{border-bottom:none}
+.sched-row .label{color:#93c5fd}
+.sched-row .val{color:#fff;font-weight:600}
+
+/* Notif log */
+.log-wrap{overflow-x:auto}
+.log-table{width:100%;border-collapse:collapse;font-size:.8rem}
+.log-table th{background:#f8fafc;padding:8px 12px;text-align:left;font-size:.69rem;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:var(--muted);border-bottom:1px solid var(--border)}
+.log-table td{padding:9px 12px;border-bottom:1px solid #f1f5f9;vertical-align:middle}
+.log-table tr:last-child td{border-bottom:none}
+.ch{display:inline-flex;align-items:center;gap:3px;padding:2px 8px;border-radius:8px;font-size:.69rem;font-weight:700}
+.ch-wa{background:#d1fae5;color:#065f46}
+.ch-em{background:#dbeafe;color:#1e40af}
+.msg-cell{max-width:260px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:var(--muted);font-size:.76rem}
+.empty-hint{text-align:center;padding:24px;color:var(--muted);font-size:.83rem;background:#f8fafc;border-radius:8px}
+
+.two-col{display:grid;grid-template-columns:1fr 1fr;gap:20px}
+@media(max-width:780px){.two-col{grid-template-columns:1fr}}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="page">
+  <div class="page-header">
+    <div>
+      <h1>🤖 Auto Reminder System</h1>
+      <p class="text-muted text-sm">Dealer alerts, customer reminders, daily summary — sab automatic</p>
+    </div>
+    <a href="{{ url_for('admin_dashboard') }}" class="btn btn-ghost btn-sm">← Dashboard</a>
+  </div>
+
+  <!-- Scheduler Banner -->
+  <div class="sched-banner {{ 'on' if sched_status.running else 'off' }}">
+    <div style="display:flex;align-items:center;gap:14px">
+      <div class="pulse-dot {{ '' if sched_status.running else 'dead' }}"></div>
+      <div>
+        {% if sched_status.running %}
+        <h3>✅ Scheduler LIVE — Background mein chal raha hai</h3>
+        <p>App band mat karna — jab tak app chale, reminders automatic jayenge</p>
+        {% else %}
+        <h3>⚠️ Scheduler band hai!</h3>
+        <p>App restart karein: <code style="background:rgba(255,255,255,.15);padding:1px 6px;border-radius:4px">python app.py</code></p>
+        {% endif %}
+      </div>
+    </div>
+    <a href="{{ url_for('admin_reminders') }}" class="btn btn-secondary btn-sm">🔄 Refresh</a>
+  </div>
+
+  <!-- Job Cards -->
+  <div class="jobs-grid">
+
+    <div class="job-card jc-red">
+      <div class="job-icon">🏪</div>
+      <div class="job-name">Dealer Overdue Alert</div>
+      <div class="job-desc">Expected return date nikal gayi — dealer ko auto WhatsApp. Kabhi ignore nahi kar sakta.</div>
+      <div class="next-run">⏰ <b>Har 6 ghante</b></div>
+      <form method="POST" action="{{ url_for('run_reminder_now', job_id='dealer_overdue') }}">
+        <button class="btn btn-danger btn-sm" style="width:100%;justify-content:center">▶ Abhi Run Karo</button>
+      </form>
+    </div>
+
+    <div class="job-card jc-amber">
+      <div class="job-icon">🔔</div>
+      <div class="job-name">Pickup Reminder</div>
+      <div class="job-desc">1+ din se Ready items — customer ko roz dopahar reminder bhejta hai.</div>
+      <div class="next-run">⏰ <b>Daily 12:00 PM</b></div>
+      <form method="POST" action="{{ url_for('run_reminder_now', job_id='pickup_reminder') }}">
+        <button class="btn btn-sm" style="width:100%;justify-content:center;background:#fef3c7;color:#92400e;border:1.5px solid #fcd34d">▶ Abhi Run Karo</button>
+      </form>
+    </div>
+
+    <div class="job-card jc-purple">
+      <div class="job-icon">🔧</div>
+      <div class="job-name">Dealer Follow-Up</div>
+      <div class="job-desc">3+ din se dealer ke paas item — har 12 ghante "status batao" message.</div>
+      <div class="next-run">⏰ <b>Har 12 ghante</b></div>
+      <form method="POST" action="{{ url_for('run_reminder_now', job_id='dealer_followup') }}">
+        <button class="btn btn-sm" style="width:100%;justify-content:center;background:#ede9fe;color:#5b21b6;border:1.5px solid #c4b5fd">▶ Abhi Run Karo</button>
+      </form>
+    </div>
+
+    <div class="job-card jc-blue">
+      <div class="job-icon">🌅</div>
+      <div class="job-name">Daily Admin Summary</div>
+      <div class="job-desc">Roz 9 AM — admin ke phone par din ka poora briefing: pending, revenue, overdue.</div>
+      <div class="next-run">⏰ <b>Daily 9:00 AM</b></div>
+      <form method="POST" action="{{ url_for('run_reminder_now', job_id='daily_summary') }}">
+        <button class="btn btn-primary btn-sm" style="width:100%;justify-content:center">▶ Abhi Run Karo</button>
+      </form>
+    </div>
+
+  </div>
+
+  <div class="two-col">
+    <!-- LEFT: Live Alerts -->
+    <div>
+
+      <!-- Overdue Dealers -->
+      <div style="margin-bottom:22px">
+        <div class="sec-title">
+          ⚠️ Overdue Dealers
+          <span class="cnt {{ 'cnt-red' if overdue else 'cnt-green' }}">{{ overdue|length }}</span>
+        </div>
+        {% if overdue %}
+          {% for r in overdue %}
+          <div class="overdue-item">
+            <div>
+              <div style="font-weight:700;font-size:.88rem">{{ r.brand }} {{ r.model_name }}</div>
+              <div class="text-xs text-muted">
+                Claim #{{ r.claim_id }} · {{ r.customer_name }}<br>
+                🏪 {{ r.dealer_name }} · Expected: {{ r.expected_return }}
+              </div>
+            </div>
+            <div style="display:flex;flex-direction:column;align-items:flex-end;gap:5px">
+              <span class="days">{{ r.days_overdue }} din late</span>
+              <form method="POST" action="{{ url_for('send_reminder_now') }}">
+                <input type="hidden" name="phone" value="{{ r.dealer_phone }}">
+                <input type="hidden" name="claim_id" value="{{ r.claim_id }}">
+                <input type="hidden" name="message"
+                  value="Reminder: {{ r.brand }} {{ r.model_name }} S/N {{ r.serial_number }} aapke paas {{ r.days_overdue }} din overdue hai (Claim #{{ r.claim_id }}). Kripya return karein. Contact: {{ shop_phone }} — {{ shop_name }}">
+                <button type="submit" class="btn btn-danger btn-xs">📱 Send Now</button>
+              </form>
+            </div>
+          </div>
+          {% endfor %}
+        {% else %}
+          <div class="empty-hint">✅ Koi overdue dealer item nahi!</div>
+        {% endif %}
+      </div>
+
+      <!-- Pending Pickup -->
+      <div>
+        <div class="sec-title">
+          📦 Pickup Pending
+          <span class="cnt {{ 'cnt-amber' if pending_pickup else 'cnt-green' }}">{{ pending_pickup|length }}</span>
+        </div>
+        {% if pending_pickup %}
+          {% for r in pending_pickup %}
+          {% set bal = (r.final_cost or 0) - (r.advance_paid or 0) %}
+          <div class="pickup-item">
+            <div>
+              <div style="font-weight:700;font-size:.88rem">{{ r.brand }} {{ r.model_name }}</div>
+              <div class="text-xs text-muted">
+                {{ r.customer_name }} · {{ r.phone }}<br>
+                {{ r.days_waiting }} din se ready
+                {% if bal > 0 %} · <b style="color:var(--danger)">₹{{ '{:,.0f}'.format(bal) }} due</b>{% endif %}
+              </div>
+            </div>
+            <form method="POST" action="{{ url_for('send_reminder_now') }}">
+              <input type="hidden" name="phone" value="{{ r.phone }}">
+              <input type="hidden" name="claim_id" value="{{ r.id }}">
+              <input type="hidden" name="message"
+                value="Namaskar {{ r.customer_name }} ji! Aapka {{ r.brand }} {{ r.model_name }} (Claim #{{ r.id }}) {{ r.days_waiting }} din se ready hai.{% if bal > 0 %} Balance: Rs {{ '{:,.0f}'.format(bal) }}.{% endif %} Aaj aayein! Timing 10AM-8PM. — {{ shop_name }}">
+              <button type="submit" class="btn btn-xs" style="background:#fef3c7;color:#92400e;border:1.5px solid #fcd34d">📱 Remind</button>
+            </form>
+          </div>
+          {% endfor %}
+        {% else %}
+          <div class="empty-hint">✅ Koi pending pickup nahi!</div>
+        {% endif %}
+      </div>
+    </div>
+
+    <!-- RIGHT: Manual + Schedule Info -->
+    <div>
+      <!-- Manual send -->
+      <div class="manual-box">
+        <h3>📱 Manual WhatsApp Bhejo</h3>
+        <form method="POST" action="{{ url_for('send_reminder_now') }}">
+          <div class="form-group">
+            <label>Phone Number</label>
+            <input class="form-control" name="phone" type="tel"
+                   placeholder="+91 98765 43210" required>
+          </div>
+          <div class="form-group">
+            <label>Message</label>
+            <textarea class="form-control" name="message" rows="3" required
+              placeholder="Namaskar! Aapka device ready hai..."></textarea>
+          </div>
+          <input type="hidden" name="claim_id" value="">
+          <button type="submit" class="btn btn-success" style="width:100%;justify-content:center">
+            📤 WhatsApp Bhejo
+          </button>
+        </form>
+      </div>
+
+      <!-- Schedule summary -->
+      <div class="sched-info">
+        <h4>⏰ Auto Schedule</h4>
+        <div class="sched-row"><span class="label">🏪 Dealer overdue</span><span class="val">Har 6 ghante</span></div>
+        <div class="sched-row"><span class="label">🔔 Pickup reminder</span><span class="val">Daily 12:00 PM</span></div>
+        <div class="sched-row"><span class="label">🔧 Dealer follow-up</span><span class="val">Har 12 ghante</span></div>
+        <div class="sched-row"><span class="label">🌅 Admin summary</span><span class="val">Daily 9:00 AM</span></div>
+        <div class="sched-row"><span class="label">📦 Item return notify</span><span class="val">Instant ⚡</span></div>
+        <div style="margin-top:12px;background:rgba(255,255,255,.08);border-radius:8px;padding:10px;font-size:.75rem;color:#bfdbfe;line-height:1.5">
+          💡 <b>app.py chalu rakho</b> — jab tak app chal raha hai, sab automatic hoga. Koi button press nahi karna!
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Notification Log -->
+  <div class="card" style="margin-top:4px">
+    <div class="card-header">
+      📋 Notification Log
+      <span style="margin-left:auto;font-weight:400;font-size:.78rem;color:var(--muted)">Last 40 messages</span>
+    </div>
+    {% if notif_log %}
+    <div class="log-wrap">
+      <table class="log-table">
+        <thead>
+          <tr><th>Time</th><th>Claim</th><th>Channel</th><th>Message</th><th>Status</th></tr>
+        </thead>
+        <tbody>
+          {% for n in notif_log %}
+          <tr>
+            <td style="white-space:nowrap;color:var(--muted)">{{ n.sent_at[:16] if n.sent_at else '—' }}</td>
+            <td>
+              {% if n.claim_id %}
+                <a href="{{ url_for('admin_claim_detail', claim_id=n.claim_id) }}" style="font-weight:700;color:var(--blue)">#{{ n.claim_id }}</a>
+              {% else %}—{% endif %}
+            </td>
+            <td>
+              <span class="ch {{ 'ch-wa' if n.channel=='whatsapp' else 'ch-em' }}">
+                {{ '📱' if n.channel=='whatsapp' else '✉️' }} {{ n.channel }}
+              </span>
+            </td>
+            <td><div class="msg-cell" title="{{ n.message }}">{{ n.message }}</div></td>
+            <td style="font-weight:700;font-size:.75rem;color:{{ '#10b981' if n.status=='sent' else ('#ef4444' if n.status=='failed' else '#f59e0b') }}">
+              {{ '✅ Sent' if n.status=='sent' else ('❌ Failed' if n.status=='failed' else '⏳') }}
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+    {% else %}
+    <div class="card-body"><div class="empty-hint">Abhi tak koi notification nahi bheja gaya.</div></div>
+    {% endif %}
+  </div>
+
+</div>
+{% endblock %}
