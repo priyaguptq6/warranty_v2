@@ -242,17 +242,6 @@ def feedback(claim_id):
                 (int(request.form.get("rating",5)),request.form.get("comment","").strip(),claim_id))
         return render_template("feedback_thanks.html",claim=claim)
     return render_template("feedback.html",claim=claim)
-import sqlite3
-import os  # Railway port ke liye zaruri hai
-from flask import Flask, render_template, request # etc.
-
-app = Flask(__name__)
-
-# --- YAHAN ADD KAREIN (Function Definition) ---
-
-print("Database Initialized!")
-
-# --- ISKE NEECHE AAPKE ROUTES HONGE ---
 @app.route('/')
 def index():
     return render_template('index.html')
