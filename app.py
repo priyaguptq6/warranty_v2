@@ -36,8 +36,7 @@ except ImportError:
     def update_remote_claim_status(*args, **kwargs):
         return False
     def append_remote_history(*args, **kwargs):
-        return False
-    def append_remote_payment(*args, **kwargs):
+
         return False
     def append_remote_image(*args, **kwargs):
         return False
@@ -48,6 +47,29 @@ except ImportError:
 from modules.scheduler import start_scheduler, get_scheduler_status, run_job_now, notify_customer_item_returned
 
 app = Flask(__name__)
+import sqlite3
+import os
+# --- YE CODE LINE 53 PAR PASTE KAREIN ---
+def initialize_railway_database():
+    import sqlite3
+    db_path = os.path.join(os.getcwd(), 'warranty.db')
+    conn = sqlite3.connect(db_path)
+    cursor = conn.cursor()
+    # Saari tables jo Railway ko chahiye
+    cursor.execute('CREATE TABLE IF NOT EXISTS customers (id INTEGER PRIMARY KEY AUTOINCREMENT, name TEXT, phone TEXT UNIQUE, email TEXT, address TEXT)')
+    cursor.execute('CREATE TABLE IF NOT EXISTS products (id INTEGER PRIMARY KEY AUTOINCREMENT, customer_id INTEGER, brand TEXT, model_name TEXT, serial_number TEXT, purchase_date TEXT, warranty_expiry TEXT, warranty_status TEXT)')
+    cursor.execute('''CREATE TABLE IF NOT EXISTS service_claims (
+        id INTEGER PRIMARY KEY AUTOINCREMENT, customer_id INTEGER, product_id INTEGER, 
+        customer_name TEXT, serial_number TEXT, product_model TEXT, issue_desc TEXT, 
+        accessories TEXT, status TEXT DEFAULT 'Received', final_cost REAL, 
+        advance_paid REAL DEFAULT 0, estimated_cost REAL, received_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP, 
+        updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP, feedback_rating INTEGER, feedback_comment TEXT)''')
+    conn.commit()
+    conn.close()
+    print("✅ Railway Database Tables Ready!")
+
+# AB ISE SAHI NAAM SE CALL KAREIN
+initialize_railway_database()
 app.secret_key = "mudit_computers_v2_secret_2024"
 
 UPLOAD_FOLDER = os.path.join(os.path.dirname(__file__), "static", "uploads")
@@ -221,7 +243,27 @@ def feedback(claim_id):
                 (int(request.form.get("rating",5)),request.form.get("comment","").strip(),claim_id))
         return render_template("feedback_thanks.html",claim=claim)
     return render_template("feedback.html",claim=claim)
+import sqlite3
+import os  # Railway port ke liye zaruri hai
+from flask import Flask, render_template, request # etc.
 
+app = Flask(__name__)
+
+# --- YAHAN ADD KAREIN (Function Definition) ---
+
+    print("Database Initialized!")
+
+# --- ISKE NEECHE AAPKE ROUTES HONGE ---
+@app.route('/')
+def index():
+    return render_template('index.html')
+
+# ... baaki routes ...
+
+# --- SABSE NEECHE (Execution Part) ---
+if __name__ == "__main__":
+    port = int(os.environ.get("PORT", 5000))
+    app.run(host='0.0.0.0', port=port)
 # Admin routes
 @app.route("/admin/login",methods=["GET","POST"])
 def admin_login():
@@ -607,12 +649,7 @@ def service_worker():
     return send_from_directory(app.static_folder, 'service-worker.js')
 
 if __name__ == "__main__":
-    init_db()
-    start_scheduler()
-    ip=get_local_ip()
-    port = int(os.environ.get("PORT", 5000))
-    host = os.environ.get("HOST", "0.0.0.0")
-    print(f"""
+    
 +----------------------------------------------------------+
 |   MUDIT COMPUTERS - Warranty System v2                  |
 +----------------------------------------------------------+

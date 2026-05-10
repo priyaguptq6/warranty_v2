@@ -109,102 +109,27 @@
         </div>
     </div>
 <script type="module">
-  // Import the functions you need from the SDKs you need
-  import { initializeApp } from "https://www.gstatic.com/firebasejs/12.13.0/firebase-app.js";
-  import { getAnalytics } from "https://www.gstatic.com/firebasejs/12.13.0/firebase-analytics.js";
-  // TODO: Add SDKs for Firebase products that you want to use
-  // https://firebase.google.com/docs/web/setup#available-libraries
+  // 1. Firebase Tools Import karein
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.11.1/firebase-app.js";
+  import { getAuth } from "https://www.gstatic.com/firebasejs/10.11.1/firebase-auth.js";
 
-  // Your web app's Firebase configuration
-  // For Firebase JS SDK v7.20.0 and later, measurementId is optional
+  // 2. Aapka actual Config (Jo pichle screenshot mein tha)
   const firebaseConfig = {
-    apiKey: "AIzaSyDsHVE6SaGOXlhU4dKwRL4yiGQ8C565rsE",
+    apiKey: "...", // Yahan apni purani apiKey rehne dein
     authDomain: "mudit-computers-warranty.firebaseapp.com",
     projectId: "mudit-computers-warranty",
-    storageBucket: "mudit-computers-warranty.firebasestorage.app",
-    messagingSenderId: "1035939457731",
-    appId: "1:1035939457731:web:2ce20f75bd8069cf4d9076",
+    storageBucket: "mudit-computers-warranty.appspot.com",
+    messagingSenderId: "...",
+    appId: "...",
     measurementId: "G-THTY1G85RJ"
   };
 
-  // Initialize Firebase
+  // 3. Initialize Firebase
   const app = initializeApp(firebaseConfig);
-  const analytics = getAnalytics(app);
+  const auth = getAuth(app);
+
+  // 4. Global access dein taki login button kaam kare
+  window.auth = auth;
+
+  console.log("Firebase Connected Successfully!");
 </script>
-    <script type="module">
-        // Firebase SDK
-        import { initializeApp } from 'https://www.gstatic.com/firebasejs/9.22.0/firebase-app.js';
-        import { getAuth, signInWithEmailAndPassword, signOut, onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/9.22.0/firebase-auth.js';
-        import { getFirestore, collection, getDocs, addDoc, updateDoc, doc, onSnapshot } from 'https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore.js';
-        import { getStorage, ref, uploadBytes, getDownloadURL } from 'https://www.gstatic.com/firebasejs/9.22.0/firebase-storage.js';
-
-        // Firebase config (REPLACE WITH YOURS)
-        const firebaseConfig = {
-            apiKey: "your-api-key",
-            authDomain: "your-project.firebaseapp.com",
-            projectId: "your-project-id",
-            storageBucket: "your-project.appspot.com",
-            messagingSenderId: "123456789",
-            appId: "your-app-id"
-        };
-
-        const app = initializeApp(firebaseConfig);
-        const auth = getAuth(app);
-        const db = getFirestore(app);
-        const storage = getStorage(app);
-
-        // Auth state
-        onAuthStateChanged(auth, (user) => {
-            if (user) {
-                document.getElementById('auth-section').classList.add('hidden');
-                document.getElementById('app').style.display = 'block';
-                loadClaims();
-            } else {
-                document.getElementById('auth-section').classList.remove('hidden');
-                document.getElementById('app').style.display = 'none';
-            }
-        });
-
-        // Login
-        document.getElementById('login-btn').addEventListener('click', async () => {
-            const email = document.getElementById('email').value;
-            const password = document.getElementById('password').value;
-            try {
-                await signInWithEmailAndPassword(auth, email, password);
-            } catch (error) {
-                document.getElementById('auth-message').textContent = error.message;
-            }
-        });
-
-        // Logout
-        document.getElementById('logout-btn').addEventListener('click', () => {
-            signOut(auth);
-        });
-
-        // Load claims
-        async function loadClaims() {
-            const claimsRef = collection(db, 'service_claims');
-            onSnapshot(claimsRef, (snapshot) => {
-                const claimsList = document.getElementById('claims-list');
-                claimsList.innerHTML = '';
-                snapshot.forEach((doc) => {
-                    const claim = doc.data();
-                    const div = document.createElement('div');
-                    div.innerHTML = `<p>Claim ${doc.id}: ${claim.customer?.name} - ${claim.status}</p>`;
-                    claimsList.appendChild(div);
-                });
-            });
-        }
-
-        // New claim (placeholder)
-        document.getElementById('new-claim-btn').addEventListener('click', () => {
-            alert('New claim form coming soon!');
-        });
-
-        // View claims (placeholder)
-        document.getElementById('view-claims-btn').addEventListener('click', () => {
-            loadClaims();
-        });
-    </script>
-</body>
-</html>
