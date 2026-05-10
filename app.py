@@ -242,16 +242,6 @@ def feedback(claim_id):
                 (int(request.form.get("rating",5)),request.form.get("comment","").strip(),claim_id))
         return render_template("feedback_thanks.html",claim=claim)
     return render_template("feedback.html",claim=claim)
-@app.route('/')
-def index():
-    return render_template('index.html')
-
-# ... baaki routes ...
-
-# --- SABSE NEECHE (Execution Part) ---
-if __name__ == "__main__":
-    port = int(os.environ.get("PORT", 5000))
-    app.run(host='0.0.0.0', port=port)
 # Admin routes
 @app.route("/admin/login",methods=["GET","POST"])
 def admin_login():
