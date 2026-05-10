@@ -2,11 +2,12 @@ import os
 import json
 import tempfile
 import firebase_admin
-from firebase_admin import credentials, firestore
+from firebase_admin import credentials, firestore, storage
 
 FIREBASE_SERVICE_ACCOUNT = os.environ.get("FIREBASE_SERVICE_ACCOUNT")
 FIREBASE_SERVICE_ACCOUNT_JSON = os.environ.get("FIREBASE_SERVICE_ACCOUNT_JSON")
 FIRESTORE_CLIENT = None
+STORAGE_BUCKET = None
 
 
 def _load_service_account():
@@ -46,6 +47,26 @@ def _get_firestore():
         return FIRESTORE_CLIENT
     except Exception as exc:
         print(f"[Firebase] Failed to initialize Firestore: {exc}")
+        return None
+
+
+def _get_storage_bucket():
+    global STORAGE_BUCKET
+    if STORAGE_BUCKET is not None:
+        return STORAGE_BUCKET
+
+    if not firebase_admin._apps:
+        keyfile = _load_service_account()
+        if keyfile:
+            cred = credentials.Certificate(keyfile)
+            firebase_admin.initialize_app(cred)
+
+    try:
+        STORAGE_BUCKET = storage.bucket()
+        print("[Firebase] Storage initialized.")
+        return STORAGE_BUCKET
+    except Exception as exc:
+        print(f"[Firebase] Failed to initialize Storage: {exc}")
         return None
 
 
@@ -129,3 +150,13 @@ def append_remote_dealer_assignment(claim_id, assignment):
         return False
     doc.update({"dealer_assignments": firestore.ArrayUnion([assignment])})
     return True
+
+
+def upload_to_storage(file_path, destination_blob_name):
+    bucket = _get_storage_bucket()
+    if not bucket:
+        return None
+    blob = bucket.blob(destination_blob_name)
+    blob.upload_from_filename(file_path)
+    blob.make_public()
+    return blob.public_url

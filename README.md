@@ -1,6 +1,5 @@
 # 🖥️ MUDIT COMPUTERS — Professional Warranty System v2
-
-## 📁 Directory Structure
+## Production-Ready with Firebase & Heroku Integration ✅
 ```
 warranty_system/
 ├── app.py                    ← Main file — YAHI RUN KARNA HAI

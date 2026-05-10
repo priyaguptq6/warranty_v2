@@ -6,6 +6,15 @@ import smtplib, threading, time, os
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
 
+# Twilio for WhatsApp
+try:
+    from twilio.rest import Client
+    TWILIO_CLIENT = Client(os.environ.get("TWILIO_ACCOUNT_SID"), os.environ.get("TWILIO_AUTH_TOKEN"))
+    TWILIO_WHATSAPP_NUMBER = os.environ.get("TWILIO_WHATSAPP_NUMBER", "+14155238886")
+except ImportError:
+    TWILIO_CLIENT = None
+    TWILIO_WHATSAPP_NUMBER = None
+
 SMTP_HOST     = "smtp.gmail.com"
 SMTP_PORT     = 587
 SMTP_USER     = "your_email@gmail.com"       # ← Change
@@ -51,17 +60,17 @@ def send_email(to_email, subject, html_body):
         return {"success": False, "error": str(e)}
 
 def send_whatsapp(phone, message):
+    if not TWILIO_CLIENT or not TWILIO_WHATSAPP_NUMBER:
+        return {"success": False, "error": "Twilio not configured"}
     try:
-        import pywhatkit as pwk
         phone = phone.strip().replace(" ","").replace("-","")
         if not phone.startswith("+"): phone = "+91" + phone
-        now = time.localtime()
-        h, m = now.tm_hour, now.tm_min + 2
-        if m >= 60: h += 1; m -= 60
-        pwk.sendwhatmsg(phone, message, h, m, wait_time=15, tab_close=True, close_time=5)
-        return {"success": True}
-    except ImportError:
-        return {"success": False, "error": "pywhatkit not installed"}
+        message = TWILIO_CLIENT.messages.create(
+            from_=f'whatsapp:{TWILIO_WHATSAPP_NUMBER}',
+            body=message,
+            to=f'whatsapp:{phone}'
+        )
+        return {"success": True, "sid": message.sid}
     except Exception as e:
         return {"success": False, "error": str(e)}
 

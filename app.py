@@ -3,6 +3,14 @@ app.py - MUDIT COMPUTERS Warranty System v2 with Auto-Scheduler
 """
 import os, socket, json, uuid
 from datetime import date
+
+# Load environment variables from .env file (if exists)
+try:
+    from dotenv import load_dotenv
+    load_dotenv()
+except ImportError:
+    pass  # python-dotenv not installed, use system env vars
+
 from flask import (Flask, render_template, request, redirect,
                    url_for, jsonify, flash, session, send_from_directory)
 from functools import wraps
@@ -18,7 +26,7 @@ try:
     from modules.firebase_db import (
         is_firebase_enabled, create_remote_claim, update_remote_claim_status,
         append_remote_history, append_remote_payment, append_remote_image,
-        append_remote_dealer_assignment
+        append_remote_dealer_assignment, upload_to_storage
     )
 except ImportError:
     def is_firebase_enabled():
@@ -35,6 +43,8 @@ except ImportError:
         return False
     def append_remote_dealer_assignment(*args, **kwargs):
         return False
+    def upload_to_storage(*args, **kwargs):
+        return None
 from modules.scheduler import start_scheduler, get_scheduler_status, run_job_now, notify_customer_item_returned
 
 app = Flask(__name__)
@@ -62,9 +72,17 @@ def save_upload(file, cid, prefix):
     fn  = f"{prefix}_{cid}_{uuid.uuid4().hex[:8]}.{ext}"
     folder = os.path.join(app.config["UPLOAD_FOLDER"], str(cid))
     os.makedirs(folder, exist_ok=True)
+    local_path = os.path.join(folder, fn)
     file.seek(0)  # Reset file pointer in case it was read before
-    file.save(os.path.join(folder, fn))
-    return f"uploads/{cid}/{fn}"
+    file.save(local_path)
+    rel = f"uploads/{cid}/{fn}"
+
+    # Upload to Firebase Storage
+    firebase_url = upload_to_storage(local_path, f"uploads/{cid}/{fn}")
+    if firebase_url:
+        rel = firebase_url  # Use Firebase URL
+
+    return rel
 def get_local_ip():
     try:
         s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
@@ -209,6 +227,19 @@ def feedback(claim_id):
 def admin_login():
     if session.get("admin_logged_in"): return redirect(url_for("admin_dashboard"))
     if request.method=="POST":
+        data = request.get_json()
+        if data and 'idToken' in data:
+            try:
+                from firebase_admin import auth
+                decoded_token = auth.verify_id_token(data['idToken'])
+                uid = decoded_token['uid']
+                # Optionally check if uid is admin
+                session["admin_logged_in"] = True
+                session["firebase_uid"] = uid
+                return jsonify({"success": True})
+            except Exception as e:
+                return jsonify({"error": str(e)}), 401
+        # Fallback for old method
         if request.form.get("username")==ADMIN_USER and request.form.get("password")==ADMIN_PASS:
             session["admin_logged_in"]=True; return redirect(url_for("admin_dashboard"))
         flash("Invalid credentials.","error")

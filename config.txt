@@ -1,16 +1,60 @@
 # MUDIT COMPUTERS — Warranty System Configuration
-# Yahan apni settings fill karein
+# ====================================================================
+# SETUP GUIDE: https://github.com/mudit-computers/warranty-v2/wiki/Setup
+# ====================================================================
 
-# Anthropic API Key (AI features ke liye)
-# Get from: https://console.anthropic.com/
+# ─ FIREBASE CONFIGURATION (Cloud Backup) ─────────────────────────────
+# Setup: https://firebase.google.com/
+# 1. Create a Firebase project at https://console.firebase.google.com/
+# 2. Go to Project Settings > Service Accounts
+# 3. Click "Generate New Private Key"
+# 4. Copy the JSON content and set FIREBASE_SERVICE_ACCOUNT_JSON environment variable
+# 
+# For local development:
+#   a. Copy your service account JSON file to: ./service-account-key.json
+#   b. Set: FIREBASE_SERVICE_ACCOUNT=/full/path/to/service-account-key.json
+#
+# For Heroku:
+#   a. Paste the entire JSON as single env var (no line breaks)
+#   b. Set: heroku config:set FIREBASE_SERVICE_ACCOUNT_JSON='{"type":"service_account"...}'
+#
+# Note: Database syncs automatically if Firebase is enabled
+# FIREBASE_SERVICE_ACCOUNT_JSON=(set via environment variable)
+
+# ─ ANTHROPIC API KEY (AI Photo Analysis) ──────────────────────────
+# Setup: https://console.anthropic.com/
+# 1. Create/login to your Anthropic account
+# 2. Get API key from Dashboard
+# 3. Set environment variable: ANTHROPIC_API_KEY=sk-ant-xxx
+#
+# Features enabled with AI:
+#   - Automatic device brand/model/serial extraction from photos
+#   - Damage severity assessment  
+#   - Repair cost suggestions
+#
+# Optional: Works fine without it, just disable AI features in admin panel
 ANTHROPIC_API_KEY=your_api_key_here
 
-# Gmail App Password (email notifications ke liye)
-# Get from: Google Account > Security > App Passwords
+# ─ GMAIL APP PASSWORD (Email Notifications) ──────────────────────
+# Setup: Gmail > Account > Security > 2-Step Verification > App Passwords
+# 1. Go to: https://myaccount.google.com/apppasswords
+# 2. Select "Mail" and "Windows Computer" (or your device)
+# 3. Copy the 16-character password
+# 4. Set environment: SMTP_USER=yourname@gmail.com, SMTP_PASSWORD=xxxx xxxx xxxx xxxx
+#
+# Features: Customer status updates, payment reminders, delivery notifications
 SMTP_USER=your_gmail@gmail.com
 SMTP_PASSWORD=your_16_char_app_password
 
-# Shop Details
+# ─ TWILIO FOR WHATSAPP ─────────────────────────────
+# Setup: https://www.twilio.com/
+# 1. Create Twilio account
+# 2. Get Account SID, Auth Token, WhatsApp number
+# 3. Set environment: TWILIO_ACCOUNT_SID, TWILIO_AUTH_TOKEN, TWILIO_WHATSAPP_NUMBER
+#
+TWILIO_ACCOUNT_SID=your_twilio_account_sid
+TWILIO_AUTH_TOKEN=your_twilio_auth_token
+TWILIO_WHATSAPP_NUMBER=+14155238886  # Twilio sandbox number or your own
 SHOP_NAME=MUDIT COMPUTERS
 SHOP_PHONE=+91-XXXXXXXXXX
 SHOP_ADDRESS=Your Shop Address, Shahjahanpur
