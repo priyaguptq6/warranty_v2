@@ -69,7 +69,8 @@ def initialize_railway_database():
     print("✅ Railway Database Tables Ready!")
 
 # AB ISE SAHI NAAM SE CALL KAREIN
-initialize_railway_database()app.secret_key = "mudit_computers_v2_secret_2024"
+initialize_railway_database()
+app.secret_key = "mudit_computers_v2_secret_2024"
 
 UPLOAD_FOLDER = os.path.join(os.path.dirname(__file__), "static", "uploads")
 os.makedirs(UPLOAD_FOLDER, exist_ok=True)
@@ -627,20 +628,19 @@ def service_worker():
     return send_from_directory(app.static_folder, 'service-worker.js')
 
 if __name__ == "__main__":
-    
-+----------------------------------------------------------+
-|   MUDIT COMPUTERS - Warranty System v2                  |
-+----------------------------------------------------------+
-|  Customer Form  : http://{ip}:5000/submit
-|  Shop Kiosk     : http://{ip}:5000/kiosk
-|  Admin Panel    : http://{ip}:5000/admin
-|  Reminders      : http://{ip}:5000/admin/reminders
-+----------------------------------------------------------+
-|  AUTO-SCHEDULER RUNNING:                                |
-|   Dealer overdue  -> Every 6 hours                      |
-|   Pickup reminder -> Daily 12:00 PM                     |
-|   Dealer followup -> Every 12 hours                     |
-|   Admin summary   -> Daily 9:00 AM                      |
-+----------------------------------------------------------+
+    print("""
+    +-------------------------------------------------------+
+    |        MUDIT COMPUTERS - Warranty System v2           |
+    +-------------------------------------------------------+
+    | Customer Form  : http://localhost:5000/submit         |
+    | Shop Kiosk     : http://localhost:5000/kiosk          |
+    | Admin Panel    : http://localhost:5000/admin          |
+    | Reminders      : http://localhost:5000/admin/reminders|
+    +-------------------------------------------------------+
+    | AUTO-SCHEDULER RUNNING:                               |
+    | Dealer overdue -> Every 6 hours                       |
+    | Pickup reminder -> Daily 12:00 PM                     |
+    +-------------------------------------------------------+
     """)
-    app.run(host=host, port=port, debug=False)
+    port = int(os.environ.get("PORT", 5000))
+    app.run(host='0.0.0.0', port=port)
