@@ -69,8 +69,7 @@ def initialize_railway_database():
     print("✅ Railway Database Tables Ready!")
 
 # AB ISE SAHI NAAM SE CALL KAREIN
-initialize_railway_database()
-app.secret_key = "mudit_computers_v2_secret_2024"
+initialize_railway_database()app.secret_key = "mudit_computers_v2_secret_2024"
 
 UPLOAD_FOLDER = os.path.join(os.path.dirname(__file__), "static", "uploads")
 os.makedirs(UPLOAD_FOLDER, exist_ok=True)
@@ -251,7 +250,7 @@ app = Flask(__name__)
 
 # --- YAHAN ADD KAREIN (Function Definition) ---
 
-    print("Database Initialized!")
+print("Database Initialized!")
 
 # --- ISKE NEECHE AAPKE ROUTES HONGE ---
 @app.route('/')
