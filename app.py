@@ -13,6 +13,27 @@ except ImportError:
 
 from flask import (Flask, render_template, request, redirect,
                    url_for, jsonify, flash, session, send_from_directory)
+# === RAILWAY DATABASE FIX ===
+import sqlite3
+try:
+    fix_conn = sqlite3.connect('warranty.db')
+    fix_conn.execute('''CREATE TABLE IF NOT EXISTS service_claims (
+        id INTEGER PRIMARY KEY AUTOINCREMENT, customer_name TEXT, 
+        serial_number TEXT, product_model TEXT, issue_desc TEXT, 
+        accessories TEXT, status TEXT DEFAULT 'Received', 
+        final_cost REAL, advance_paid REAL DEFAULT 0, 
+        estimated_cost REAL, received_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP, 
+        updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP, 
+        feedback_rating INTEGER, feedback_comment TEXT,
+        customer_id INTEGER, product_id INTEGER)''')
+    fix_conn.execute('CREATE TABLE IF NOT EXISTS dealers (id INTEGER PRIMARY KEY AUTOINCREMENT, dealer_name TEXT, phone TEXT, address TEXT, email TEXT, contact_person TEXT)')
+    fix_conn.execute('CREATE TABLE IF NOT EXISTS customers (id INTEGER PRIMARY KEY AUTOINCREMENT, name TEXT, phone TEXT UNIQUE, email TEXT, address TEXT)')
+    fix_conn.commit()
+    fix_conn.close()
+    print("✅ Tables fixed successfully!")
+except Exception as e:
+    print("DB Fix Error:", e)
+# ============================
 from functools import wraps
 from modules.database import (
     init_db, get_db, get_all_claims, get_claim_by_id, get_claim_history,
